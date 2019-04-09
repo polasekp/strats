@@ -45,3 +45,7 @@ pip:
 
 importnew:
 	@$(PYTHON) $(MANAGE_PY) import_new_activities
+
+
+importall:
+	@$(PYTHON) $(MANAGE_PY) import_all_activities

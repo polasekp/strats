@@ -1,8 +1,7 @@
 from datetime import datetime
 
-from django.core.management.base import BaseCommand
-
 from activities.models import Activity
+from django.core.management.base import BaseCommand
 from utils.models.activities import create_activity_from_strava
 from utils.stravalib import create_strava_client
 

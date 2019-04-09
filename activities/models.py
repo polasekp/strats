@@ -1,47 +1,9 @@
-from django.db import models
-
 from chamber.models.fields import SubchoicesPositiveIntegerField
-from chamber.utils.datastructures import (ChoicesNumEnum,
-                                          SubstatesChoicesNumEnum)
-
-
-# filter distance this year
-# Activity.objects.filter(type=4, start__gt=pytz.timezone("Europe/Berlin").localize(datetime(2018,11, 1))).aggregate(Sum('distance'))['distance__sum']/1000
+from chamber.utils.datastructures import ChoicesEnum, ChoicesNumEnum, SubstatesChoicesNumEnum
+from django.db import models
 
 
 class Activity(models.Model):
-
-    # SPORT = ChoicesNumEnum(
-    #     ('RUN', 'Run', 1),
-    #     ('RIDE', 'Ride', 2),
-    #     ('HIKE', 'Hike', 3),
-    #     ('XC_SKI', 'Nordic Ski', 4),
-    #     ('ROLLER_SKI', 'Roller Ski', 5),
-    #     ('ALPINE_SKI', 'Alpine Ski', 6),
-    #     ('SWIM', 'Swim', 7),
-    #     ('WALK', 'Walk', 8),
-    #     ('CANOENING', 'Canoeing', 9),
-    #     ('CLIMBING', 'Rock Climbing', 10),
-    #     ('ICE_SKATE', 'Ice Skate', 11),
-    #     ('WORKOUT', 'Workout', 12),
-    #     ('OTHER', 'Other', 13),
-    # )
-
-    # SPORT_TYPE = SubstatesChoicesNumEnum({
-    #     SPORT.RIDE: (
-    #         ('ROAD', 'Road', 1),
-    #         ('BIKE', 'Bike', 2),
-    #     ),
-    #     SPORT.XC_SKI: (
-    #         ('CLASSIC', 'Classic', 3),
-    #         ('SKATE', 'Skate', 4),
-    #     ),
-    #     SPORT.WORKOUT: (
-    #         ('PARCOUR', 'Parcour', 5),
-    #         ('MFF', 'Gym with MFF', 6),
-    #         ('OTHER', 'Other', 7),
-    #     ),
-    # })
 
     SPORT = (
         (1, 'RUN'),
@@ -71,7 +33,7 @@ class Activity(models.Model):
     sport = models.PositiveSmallIntegerField(verbose_name='sport', choices=SPORT, null=False, blank=False)
     # sport_type = SubchoicesPositiveIntegerField(verbose_name='sport type', null=True, blank=False, enum=SPORT_TYPE,
     #                                             supchoices_field_name='sport')
-    gear = models.ManyToManyField('Gear', verbose_name='gear', related_name='activities', null=True, blank=True)
+    gear = models.ManyToManyField('Gear', verbose_name='gear', related_name='activities', blank=True)
     kudos = models.IntegerField(verbose_name='kudos count', null=True, blank=True)
     achievements = models.IntegerField(verbose_name='achievements count', null=True, blank=True)
     comments = models.IntegerField(verbose_name='comments count', null=True, blank=True)
@@ -79,9 +41,9 @@ class Activity(models.Model):
     commute = models.BooleanField(verbose_name='is commute', default=False)
     # Strava does not enable to get related athletes, just the count. Therefore athletes has to be connected
     # manually with activity and the count of connected athletes and athlete count may differ
-    athlete_count = models.PositiveIntegerField(verbose_name='athlete count', null=True, blank=True)
-    athletes = models.ManyToManyField('Athlete', verbose_name='athletes', related_name='activities', null=True,
-                                      blank=True)
+    athlete_count = models.PositiveSmallIntegerField(verbose_name='athlete count', null=True, blank=True)
+    athletes = models.ManyToManyField('Athlete', verbose_name='athletes', related_name='activities', blank=True)
+    tags = models.ManyToManyField('Tag', verbose_name='tags', related_name='activities', blank=True)
 
     def __str__(self):
         return self.name
@@ -100,15 +62,15 @@ class Athlete(models.Model):
 
 class Gear(models.Model):
 
-    TYPE = ChoicesNumEnum(
-        ('SHOE', 'Shoe', 1),
-        ('BIKE', 'Bike', 2),
-        ('SKI', 'Ski', 3),
-        ('OTHER', 'Other', 4),
+    TYPE = (
+        (1, 'SHOE'),
+        (2, 'BIKE'),
+        (3, 'SKI'),
+        (4, 'OTHER'),
     )
 
     name = models.CharField(verbose_name='name', max_length=50, null=False, blank=False)
-    # type = models.PositiveSmallIntegerField(verbose_name='gear type', choices=TYPE, null=False, blank=False)
+    type = models.PositiveSmallIntegerField(verbose_name='gear type', choices=TYPE, null=False, blank=False)
     strava_id = models.CharField(verbose_name='strava ID', max_length=10, null=True, blank=True)
 
     def __str__(self):
@@ -118,11 +80,18 @@ class Gear(models.Model):
 class Accessory(models.Model):
 
     name = models.CharField(verbose_name='name', max_length=50, null=False, blank=False)
-    activities = models.ManyToManyField('Activity', verbose_name='activities', null=True, blank=True,
-                                        related_name='accessories')
+    activities = models.ManyToManyField('Activity', verbose_name='activities', blank=True, related_name='accessories')
     gear = models.ForeignKey('Gear', verbose_name='gear', null=False, blank=False, on_delete=models.CASCADE,
                              related_name='accessories')
     is_active = models.BooleanField(verbose_name='is active', default=True)
 
     def __str__(self):
         return f'{self.name} ({self.gear})'
+
+
+class Tag(models.Model):
+
+    name = models.SlugField(verbose_name='slug', max_length=30, null=False, blank=False, unique=True)
+
+    def __str__(self):
+        return self.name

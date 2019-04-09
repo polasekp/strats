@@ -1,6 +1,6 @@
 from activities.models import Activity, Gear
-from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 
 
 STRAVA_ACTIVITY_TYPE_TO_ACTIVITY_TYPE = {
@@ -34,14 +34,14 @@ def create_activity_from_strava(activity):
             moving_time=activity.moving_time,
             elapsed_time=activity.elapsed_time,
             elevation_gain=activity.total_elevation_gain._num,
-            type=STRAVA_ACTIVITY_TYPE_TO_ACTIVITY_TYPE.get(activity.type, 14),  # default is set to Other
+            sport=STRAVA_ACTIVITY_TYPE_TO_ACTIVITY_TYPE.get(activity.type, 13),  # default is set to Other
             kudos=activity.kudos_count,
             achievements=activity.achievement_count,
             comments=activity.comment_count,
             commute=activity.commute,
             athlete_count=activity.athlete_count,
         )
-        new_activity.gear.add(Gear.objects.get(strava_id=activity.gear_id))
+        # new_activity.gear.add(Gear.objects.get(strava_id=activity.gear_id))
     except IntegrityError as e:
         handle_exception(e, activity)
         return False
