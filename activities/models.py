@@ -55,7 +55,13 @@ class Activity(SmartModel):
 
 class Athlete(SmartModel):
 
-    name = models.CharField(verbose_name='name', max_length=50, null=False, blank=False)
+    first_name = models.CharField(verbose_name='first name', max_length=50, null=False, blank=False)
+    last_name = models.CharField(verbose_name='last name', max_length=50, null=True, blank=True)
+    nickname = models.CharField(verbose_name='nickname', max_length=50, null=True, blank=True)
+
+    @property
+    def name(self):
+        return f'{self.first_name} {self.last_name}' if not self.nickname else self.nickname
 
     def __str__(self):
         return self.name
