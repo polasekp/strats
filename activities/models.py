@@ -44,8 +44,14 @@ class Activity(SmartModel):
     tags = models.ManyToManyField('Tag', verbose_name='tags', related_name='activities', blank=True)
 
     def __str__(self):
-        return f'{self.name} #{self.tags.all()}'
-        # return f'{map(lambda name: '#' + name, Tag.objects.all().values_list('name', flat=True))}'
+        return f'{str.upper(self.TYPE.get_label(self.type))} ------------ {self.name} ------------ {self.tags_formated}'
+
+    @property
+    def tags_formated(self):
+        if self.tags.exists():
+            return ', '.join([f'#{tag}' for tag in self.tags.all().values_list('name', flat=True)])
+        else:
+            return ''
 
     class Meta:
         ordering = ('-start',)
