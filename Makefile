@@ -5,7 +5,7 @@ MANAGE_PY = $(LOCALPATH)/manage.py
 SUPERUSER_LOGIN = 'admin'
 SUPERUSER_PASSWORD = 'qweqwe'
 
-PYTHON_BIN = $(VIRTUAL_ENV)/bin
+PYTHON_BIN = venv/bin/
 PYTHON = $(PYTHON_BIN)/python
 PIP = $(PYTHON_BIN)/pip
 
@@ -49,3 +49,10 @@ importnew:
 
 importall:
 	@$(PYTHON) $(MANAGE_PY) import_all_activities
+
+
+refreshvenv:
+	rm -rf venv && \
+	python3 -m venv venv && \
+	venv/bin/pip install --upgrade pip && \
+	venv/bin/pip install -r requirements.txt

@@ -9,3 +9,6 @@ __pycache__/
 .idea
 lib/
 bin/
+
+# VIRTUAL ENV
+venv/
