@@ -122,6 +122,21 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'activities', 'templates')],
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth'
+            ],
+        },
+    }
+]
+
 # CREDENTIALS
-STRAVA_ACCESS_TOKEN = '4ca6d0ceed0f7cefc3bea1914372e39ef552090c'
-STRAVA_REFRESH_TOKEN = 'f3515bb998a2eb2051f93de429601d8849c1d4e5'
+CLIENT_SECRET = None
+CLIENT_ID = None
+STRAVA_CODE = None
+
+DEFAULT_DOWNLOAD_LIMIT = 50

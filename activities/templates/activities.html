@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Student_Show</title>
+</head>
+<body>
+<h1>MFF Activities</h1>
+
+
+{% if activities_2018 %}
+    <ul>
+    {% for activity in activities_2018 %}
+        <li><a href="/polls/{{ activity.id }}/">{{ activity.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No activities are available.</p>
+{% endif %}
+
+</body>
+</html>

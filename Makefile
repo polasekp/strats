@@ -23,11 +23,11 @@ create_superuser:
 resetdb: initdb create_superuser
 
 
-up:
+runserver:
 	$(PYTHON) $(MANAGE_PY) runserver
 
 
-makemigrations:
+schemamigrations:
 	$(PYTHON) $(MANAGE_PY) makemigrations
 
 
@@ -39,20 +39,19 @@ shell:
 	$(PYTHON) $(MANAGE_PY) shell_plus
 
 
-pip:
-	$(PIP) install -r $(LOCALPATH)/requirements.txt
+import_activities:
+	@$(PYTHON) $(MANAGE_PY) import_activities --limit=$(limit) --fast=$(fast)
 
 
-importnew:
-	@$(PYTHON) $(MANAGE_PY) import_new_activities
-
-
-importall:
-	@$(PYTHON) $(MANAGE_PY) import_all_activities
-
-
-refreshvenv:
+recreatevenv:
 	rm -rf venv && \
 	python3 -m venv venv && \
-	venv/bin/pip install --upgrade pip && \
-	venv/bin/pip install -r requirements.txt
+	$(PIP) install --upgrade pip && \
+	$(PIP) install -r requirements.txt
+
+updatevenv:
+	$(PIP) install -r requirements.txt
+
+ipython:
+	venv/bin/pip install ipython && \
+	${PYTHON} manage.py shell

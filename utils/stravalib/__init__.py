@@ -1,9 +1,24 @@
-from strats.settings import STRAVA_ACCESS_TOKEN, STRAVA_REFRESH_TOKEN
+import requests
 from stravalib.client import Client
 
+from strats.settings import CLIENT_ID, CLIENT_SECRET, STRAVA_CODE
 
-def create_strava_client():
-    client = Client()
-    client.access_token = STRAVA_ACCESS_TOKEN
-    client.refresh_token = STRAVA_REFRESH_TOKEN
+# to get the STRAVA_CODE you need to manually confirm following request
+# https://www.strava.com/oauth/authorize?
+#     client_id=THE_CLIENT_ID&
+#     redirect_uri=http://localhost&
+#     response_type=code&
+#     scope=profile:read_all,activity:read_all
+
+
+def get_access_and_refresh_token():
+    url = f"https://www.strava.com/oauth/token?client_id={CLIENT_ID}&client_secret={CLIENT_SECRET}" \
+          f"&code={STRAVA_CODE}&grant_type=authorization_code"
+    response_data = requests.post(url).json()
+    return response_data.get("access_token"), response_data.get("refresh_token")
+
+
+def get_strava_client():
+    access_token, _ = get_access_and_refresh_token()
+    client = Client(access_token=access_token)
     return client

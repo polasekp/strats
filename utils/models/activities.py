@@ -1,7 +1,8 @@
-from activities.models import Activity, Gear
+from activities.models import Activity, Gear, Tag
 from chamber.shortcuts import get_object_or_none
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
+from decimal import Decimal
 
 
 STRAVA_ACTIVITY_TYPE_TO_ACTIVITY_TYPE = {
@@ -24,7 +25,27 @@ STRAVA_ACTIVITY_TYPE_TO_GEAR_TYPE = {
     'Ride': Gear.TYPE.BIKE,
     'Run': Gear.TYPE.SHOE,
     'Hike': Gear.TYPE.SHOE,
+    'Walk': Gear.TYPE.SHOE,
 }
+
+
+TAG_NAMES = ["skate", "classic"]
+TAG_NAME_TO_TAG = {}
+
+
+def create_tags_if_needed():
+    for tag_name in TAG_NAMES:
+        tag = get_object_or_none(Tag, name=tag_name)
+        if not tag:
+            tag = Tag.objects.create(name=tag_name)
+        TAG_NAME_TO_TAG[tag_name] = tag
+
+
+def add_tag_to_activity_if_needed(activity):
+    # teh input activity is the instance of Activity model
+    for tag_name, tag in TAG_NAME_TO_TAG.items():
+        if (activity.name + activity.description).find(f"#{tag_name}") != -1:
+            activity.tags.add(tag)
 
 
 def create_and_add_gear_to_activity_if_needed(activity, strava_client):
@@ -46,23 +67,34 @@ def create_and_add_gear_to_activity_if_needed(activity, strava_client):
 
 def create_activity_from_strava(activity):
     try:
-        Activity.objects.create(
+        activity = Activity.objects.create(
             name=activity.name,
+            description=activity.description if activity.description else "",
             strava_id=activity.id,
-            distance=str(round(activity.distance._num, 2)),
-            average_speed=str(round(activity.average_speed._num, 2)),
+            distance=round(Decimal(activity.distance._num), 2),
+            average_speed=round(Decimal(activity.average_speed._num), 2),
+            max_speed=round(Decimal(activity.max_speed._num), 2),
+            average_heartrate=round(Decimal(activity.average_heartrate), 1) if activity.average_heartrate else None,
+            max_heartrate=activity.max_heartrate if activity.max_heartrate else None,
+            calories=activity.calories,
+            average_temp=activity.average_temp if activity.average_temp else None,
             start=activity.start_date,
             moving_time=activity.moving_time,
             elapsed_time=activity.elapsed_time,
             elevation_gain=activity.total_elevation_gain._num,
             type=STRAVA_ACTIVITY_TYPE_TO_ACTIVITY_TYPE.get(activity.type, Activity.TYPE.OTHER),
-            kudos=activity.kudos_count,
-            achievements=activity.achievement_count,
-            comments=activity.comment_count,
+            kudos_count=activity.kudos_count,
+            photo_count=activity.total_photo_count,
+            achievement_count=activity.achievement_count,
+            comment_count=activity.comment_count,
             commute=activity.commute,
             athlete_count=activity.athlete_count,
+            start_lat=round(Decimal(activity.start_latlng.lat), 6) if activity.start_latlng else None,
+            start_lon=round(Decimal(activity.start_latlng.lon), 6) if activity.start_latlng else None,
+            end_lat=round(Decimal(activity.end_latlng.lat), 6) if activity.end_latlng else None,
+            end_lon=round(Decimal(activity.end_latlng.lon), 6) if activity.end_latlng else None,
         )
     except (IntegrityError, ValidationError) as e:
         print(f'Unable to import activity {activity.start_date} {activity.name}: {e}')
         return False
-    return True
+    return activity
