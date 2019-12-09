@@ -1,4 +1,4 @@
-Django==2.1.7
+Django==2.1.11
 django-extensions==2.1.6
 stravalib==0.10.2
 https://github.com/druids/django-chamber/tarball/0.5.1#egg=django-chamber
