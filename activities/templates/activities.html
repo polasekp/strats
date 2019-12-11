@@ -1,21 +1,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Student_Show</title>
+<title>MFF Mísečky</title>
+
+<style>
+table {
+    border-collapse: collapse;
+}
+
+table, td, th {
+  border: 1px solid black;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+</style>
+
 </head>
 <body>
 <h1>MFF Activities</h1>
 
-
-{% if activities_2018 %}
-    <ul>
-    {% for activity in activities_2018 %}
-        <li><a href="/polls/{{ activity.id }}/">{{ activity.name }}</a></li>
+<table>
+<tr>
+    <th>rok</th>
+    {% for col_name in col_names  %}
+        <th> {{ col_name }} </th>
     {% endfor %}
-    </ul>
-{% else %}
-    <p>No activities are available.</p>
-{% endif %}
+</tr>
+
+{% for year, activities_stats in activities_stats.items %}
+    <tr>
+    <td>{{ year }}</td>
+    {% for stat_name, stat_value in activities_stats.items %}
+        {% if stat_name in "longest_distance,kudos_max" %}
+            <td>
+                <a href="https://www.strava.com/activities/{{ stat_value.1 }}">{{ stat_value.0 }}</a>
+            </td>
+        {% else %}
+            <td> {{ stat_value }} </td>
+        {% endif %}
+    {% endfor %}
+    </tr>
+{% endfor %}
+</table>
+
+
+{% for year, year_activities in activities.items %}
+    <h1>{{ year }}</h1>
+    {% if year_activities %}
+        <ul>
+        {% for activity in year_activities %}
+            <li>
+            {{ activity.start_date_formatted }}
+                <a href="https://www.strava.com/activities/{{ activity.strava_id }}">{{ activity.name }}</a>
+                ({{ activity.distance_km }} km, {{ activity.other_athletes_count}} spolujezdci)
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No activities are available.</p>
+    {% endif %}
+{% endfor %}
 
 </body>
 </html>

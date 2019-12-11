@@ -24,6 +24,8 @@ class Activity(SmartModel):
     name = models.CharField(verbose_name='name', max_length=255, null=False, blank=False)
     description = models.TextField(blank=True)
     strava_id = models.PositiveIntegerField(verbose_name='strava ID', null=True, blank=True)
+    external_id = models.CharField(verbose_name='external ID', max_length=255, null=True, blank=True)
+    device_name = models.CharField(verbose_name='device name', max_length=255, blank=True)
     distance = models.DecimalField(verbose_name='distance (m)', decimal_places=2, max_digits=9, null=True, blank=True)
     average_speed = models.DecimalField(verbose_name='average speed (m/s)', decimal_places=2, max_digits=7, null=True,
                                         blank=True)
@@ -31,27 +33,34 @@ class Activity(SmartModel):
                                     blank=True)
     average_heartrate = models.DecimalField(verbose_name='average heartrate', decimal_places=1, max_digits=7, null=True,
                                             blank=True)
-    max_heartrate = models.IntegerField(verbose_name='elevation gain', null=True, blank=True)
-    calories = models.IntegerField(verbose_name='calories', null=True, blank=True)
-    average_temp = models.IntegerField(verbose_name='average temp', null=True, blank=True)
+    max_heartrate = models.PositiveIntegerField(verbose_name='elevation gain', null=True, blank=True)
+    calories = models.PositiveIntegerField(verbose_name='calories', null=True, blank=True)
+    average_temp = models.PositiveIntegerField(verbose_name='average temp', null=True, blank=True)
+    average_cadence = models.DecimalField(verbose_name='average cadence', decimal_places=1, max_digits=5, null=True,
+                                          blank=True)
     start = models.DateTimeField(verbose_name='start', null=False, blank=False)
     start_lat = models.DecimalField(verbose_name='start latitude', decimal_places=6, max_digits=8, null=True,
                                     blank=True)
     start_lon = models.DecimalField(verbose_name='start longitude', decimal_places=6, max_digits=9, null=True,
-                                     blank=True)
+                                    blank=True)
     end_lat = models.DecimalField(verbose_name='end latitude', decimal_places=6, max_digits=8, null=True, blank=True)
     end_lon = models.DecimalField(verbose_name='end longitude', decimal_places=6, max_digits=9, null=True, blank=True)
     moving_time = models.DurationField(verbose_name='moving time', null=True, blank=True)
     elapsed_time = models.DurationField(verbose_name='elapsed time', null=False, blank=False)
-    elevation_gain = models.IntegerField(verbose_name='elevation gain', null=True, blank=True)
+    elevation_gain = models.PositiveIntegerField(verbose_name='elevation gain', null=True, blank=True)
     type = models.PositiveSmallIntegerField(verbose_name='type', choices=TYPE.choices, null=False, blank=False)
     gear = models.ManyToManyField('Gear', verbose_name='gear', related_name='activities', blank=True)
-    kudos_count = models.IntegerField(verbose_name='kudos count', null=True, blank=True)
-    photo_count = models.IntegerField(verbose_name='photo count', null=True, blank=True)
-    achievement_count = models.IntegerField(verbose_name='achievement count', null=True, blank=True)
-    comment_count = models.IntegerField(verbose_name='comment count', null=True, blank=True)
+    kudos_count = models.PositiveIntegerField(verbose_name='kudos count', null=True, blank=True)
+    photo_count = models.PositiveIntegerField(verbose_name='photo count', null=True, blank=True)
+    achievement_count = models.PositiveIntegerField(verbose_name='achievement count', null=True, blank=True)
+    comment_count = models.PositiveIntegerField(verbose_name='comment count', null=True, blank=True)
+    pr_count = models.PositiveIntegerField(verbose_name='pr count', null=True, blank=True)
     race = models.BooleanField(verbose_name='is race', default=False)
+    flagged = models.BooleanField(verbose_name='flagged', default=False)
     commute = models.BooleanField(verbose_name='is commute', default=False)
+    manual = models.BooleanField(verbose_name='is manual', default=False)
+    has_heartrate = models.BooleanField(verbose_name='has heartrate', default=False)
+    visibility = models.CharField(verbose_name='visibility', max_length=100, blank=True)
     # Strava does not enable to get related athletes, just the count. Therefore athletes has to be connected
     # manually with activity and the count of connected athletes and athlete count may differ
     athlete_count = models.PositiveSmallIntegerField(verbose_name='strava athletes count', null=True, blank=True)
@@ -59,10 +68,22 @@ class Activity(SmartModel):
     tags = models.ManyToManyField('Tag', verbose_name='tags', related_name='activities', blank=True)
 
     def __str__(self):
-        return f'{str.upper(self.TYPE.get_label(self.type))} ------------ {self.name} ------------ {self.tags_formated}'
+        return f'{str.upper(self.TYPE.get_label(self.type))} ------------ {self.name} ------------ {self.tags_formatted}'
 
     @property
-    def tags_formated(self):
+    def start_date_formatted(self):
+        return self.start.strftime("%d.%m.")
+
+    @property
+    def distance_km(self):
+        return round(self.distance/1000, 1)
+
+    @property
+    def other_athletes_count(self):
+        return self.athlete_count - 1
+
+    @property
+    def tags_formatted(self):
         if self.tags.exists():
             return ', '.join([f'#{tag}' for tag in self.tags.all().values_list('name', flat=True)])
         else:

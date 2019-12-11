@@ -5,7 +5,7 @@ from strats.settings import CLIENT_ID, CLIENT_SECRET, STRAVA_CODE
 
 # to get the STRAVA_CODE you need to manually confirm following request
 # https://www.strava.com/oauth/authorize?
-#     client_id=THE_CLIENT_ID&
+#     client_id=33679&
 #     redirect_uri=http://localhost&
 #     response_type=code&
 #     scope=profile:read_all,activity:read_all
@@ -20,5 +20,7 @@ def get_access_and_refresh_token():
 
 def get_strava_client():
     access_token, _ = get_access_and_refresh_token()
+    print(access_token)
+    # access_token = "112937b594cf94a3dceaec8b6d3c3ad38885c355"
     client = Client(access_token=access_token)
     return client

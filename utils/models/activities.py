@@ -3,6 +3,7 @@ from chamber.shortcuts import get_object_or_none
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from decimal import Decimal
+from datetime import date
 
 
 STRAVA_ACTIVITY_TYPE_TO_ACTIVITY_TYPE = {
@@ -47,6 +48,9 @@ def add_tag_to_activity_if_needed(activity):
         if (activity.name + activity.description).find(f"#{tag_name}") != -1:
             activity.tags.add(tag)
 
+    if date(2019, 12, 7) <= activity.start.date() <= date(2019, 12, 15):
+        activity.tags.add(Tag.objects.get(name="MFF_misecky"))
+
 
 def create_and_add_gear_to_activity_if_needed(activity, strava_client):
     if activity.gear_id:
@@ -71,6 +75,7 @@ def create_activity_from_strava(activity):
             name=activity.name,
             description=activity.description if activity.description else "",
             strava_id=activity.id,
+            external_id=activity.external_id,
             distance=round(Decimal(activity.distance._num), 2),
             average_speed=round(Decimal(activity.average_speed._num), 2),
             max_speed=round(Decimal(activity.max_speed._num), 2),
@@ -93,6 +98,13 @@ def create_activity_from_strava(activity):
             start_lon=round(Decimal(activity.start_latlng.lon), 6) if activity.start_latlng else None,
             end_lat=round(Decimal(activity.end_latlng.lat), 6) if activity.end_latlng else None,
             end_lon=round(Decimal(activity.end_latlng.lon), 6) if activity.end_latlng else None,
+            average_cadence=round(Decimal(activity.average_cadence), 1) if activity.average_cadence else None,
+            flagged=activity.flagged,
+            manual=activity.manual,
+            visibility=getattr(activity, "visibility", ""),
+            device_name=activity.device_name if activity.device_name else "",
+            has_heartrate=activity.has_heartrate,
+            pr_count=activity.pr_count,
         )
     except (IntegrityError, ValidationError) as e:
         print(f'Unable to import activity {activity.start_date} {activity.name}: {e}')

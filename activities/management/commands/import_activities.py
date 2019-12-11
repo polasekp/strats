@@ -1,18 +1,56 @@
 import datetime
-
+from decimal import Decimal
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import localtime
 
-from activities.models import Activity
+from activities.models import Activity, Tag
 from utils.models.activities import create_activity_from_strava, create_and_add_gear_to_activity_if_needed, \
     create_tags_if_needed, add_tag_to_activity_if_needed
 from utils.stravalib import get_strava_client
 
 
+client = get_strava_client()
+
+
+def set_style_tags():
+    cl_tag = Tag.objects.get(name="classic")
+    ft_tag = Tag.objects.get(name="skate")
+
+    # ac = Activity.objects.get(strava_id=2016811474)
+    # ac.tags.add(cl_tag)
+
+    # for activity in Activity.objects.filter(tags__name="MFF_misecky").exclude(tags__in=[ft_tag, cl_tag]):
+    #     if activity.name.lower().find("zasypal jim") != -1:
+    #         print(f"{activity.name}: {activity.strava_id}")
+            # activity.tags.add(ft_tag)
+
+    # for activity in Activity.objects.filter(tags__name="MFF_misecky").exclude(tags__in=[cl_tag, ft_tag]):
+    #     if activity.name.lower().find("na rovinka") != -1:
+    #         print(f"{activity.name}: {activity.strava_id}")
+    #         activity.tags.add(cl_tag)
+
+
+def update_activities():
+    for activity in Activity.objects.filter(changed_at__lt=datetime.datetime.now() - datetime.timedelta(hours=1)):
+        print(f"Updating activity ID {activity.strava_id}")
+        activity_strava = client.get_activity(activity.strava_id)
+        activity.pr_count = activity_strava.pr_count
+        activity.average_cadence = round(Decimal(activity_strava.average_cadence), 1) if activity_strava.average_cadence else None
+        activity.device_name = activity_strava.device_name if activity_strava.device_name else "",
+        activity.external_id = activity_strava.external_id
+        activity.flagged = activity_strava.flagged
+        activity.has_heartrate = activity_strava.has_heartrate
+        activity.manual = activity_strava.manual
+        activity.visibility = getattr(activity_strava, "visibility", "")
+        activity.kudos_count = activity_strava.kudos_count
+        activity.comment_count = activity_strava.comment_count
+        activity.save()
+
+
 def import_activities(before=None, after=None, limit=settings.DEFAULT_DOWNLOAD_LIMIT, fast=True):
     create_tags_if_needed()
-    client = get_strava_client()
+    # client = get_strava_client()
     activities_count = 0
     new_gear_count = 0
     activities = client.get_activities(after=after, before=before, limit=limit)
@@ -44,8 +82,8 @@ class Command(BaseCommand):
         before = None
         if Activity.objects.count() > 0:
             # before = (datetime.datetime.now() - datetime.timedelta(days=200))
-            # after = localtime(Activity.objects.first().start)
-            before = localtime(Activity.objects.last().start)
+            after = localtime(Activity.objects.first().start)
+            # before = localtime(Activity.objects.last().start)
         else:
             # after = (datetime.datetime.now() - datetime.timedelta(days=2))
             before = datetime.datetime.now()
@@ -58,8 +96,9 @@ class Command(BaseCommand):
                 fast = False
         else:
             fast = True
-        print(f"Importing activities -- after: {after}, before: {before}, limit: {limit}, fast: {fast}")
 
-        after = datetime.datetime(2019, 12, 7)
-        before = datetime.datetime(2019, 12, 23)
-        import_activities(after=after, before=before, limit=limit, fast=fast)
+        # after = datetime.datetime(2019, 12, 7)
+        # before = datetime.datetime(2019, 12, 23)
+        fast = False
+        print(f"Importing activities -- after: {after}, before: {before}, limit: {limit}, fast: {fast}")
+        import_activities(after=after, before=before, limit=30, fast=fast)
