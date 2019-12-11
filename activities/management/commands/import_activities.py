@@ -50,7 +50,6 @@ def update_activities():
 
 def import_activities(before=None, after=None, limit=settings.DEFAULT_DOWNLOAD_LIMIT, fast=True):
     create_tags_if_needed()
-    # client = get_strava_client()
     activities_count = 0
     new_gear_count = 0
     activities = client.get_activities(after=after, before=before, limit=limit)
@@ -61,7 +60,6 @@ def import_activities(before=None, after=None, limit=settings.DEFAULT_DOWNLOAD_L
         if not fast:
             activity = client.get_activity(activity.id)
         print(f"Creating activity ID {activity.id}...   ({e}/{limit})")
-        # created_activity = create_activity_from_strava(activity_detail)
         created_activity = create_activity_from_strava(activity)
         activities_count += 1
         if create_and_add_gear_to_activity_if_needed(activity, client):

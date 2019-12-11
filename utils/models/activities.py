@@ -75,6 +75,7 @@ def create_activity_from_strava(activity):
             name=activity.name,
             description=activity.description if activity.description else "",
             strava_id=activity.id,
+            athlete_id=activity.athlete.id,
             external_id=activity.external_id,
             distance=round(Decimal(activity.distance._num), 2),
             average_speed=round(Decimal(activity.average_speed._num), 2),

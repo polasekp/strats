@@ -24,6 +24,7 @@ class Activity(SmartModel):
     name = models.CharField(verbose_name='name', max_length=255, null=False, blank=False)
     description = models.TextField(blank=True)
     strava_id = models.PositiveIntegerField(verbose_name='strava ID', null=True, blank=True)
+    athlete_id = models.PositiveIntegerField(verbose_name='athlete ID')
     external_id = models.CharField(verbose_name='external ID', max_length=255, null=True, blank=True)
     device_name = models.CharField(verbose_name='device name', max_length=255, blank=True)
     distance = models.DecimalField(verbose_name='distance (m)', decimal_places=2, max_digits=9, null=True, blank=True)
