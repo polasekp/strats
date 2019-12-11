@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.http import HttpResponse
 from django.views.generic import TemplateView
 from django.db.models import Sum, Avg, Max
@@ -52,7 +54,7 @@ class ActivitiesView(TemplateView):
                 "total_km": total_km,
                 "sum_hod": sum_field(year_activities, "moving_time"),
                 "elevation_gain": sum_field(year_activities, "elevation_gain"),
-                "avg_pace": round(avg_field(year_activities, "average_speed") * 3.6, 1),
+                "avg_speed": round(avg_field(year_activities, "average_speed") * Decimal(3.6), 1),
                 "avg_per_activity": round(total_km / year_activities.count(), 1),
                 "activities_count": year_activities.count(),
                 "avg_cadence": avg_field(year_activities, "average_cadence"),

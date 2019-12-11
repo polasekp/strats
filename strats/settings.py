@@ -128,11 +128,26 @@ TEMPLATES = [
         'DIRS': [os.path.join(BASE_DIR, 'activities', 'templates')],
         'OPTIONS': {
             'context_processors': [
-                'django.contrib.auth.context_processors.auth'
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     }
 ]
+
+
+SHELL_PLUS = 'ipython'
+SHELL_PLUS_POST_IMPORTS = [
+    ('activities.models', '*'),
+]
+
+# TODO fix it as it don't work
+IPYTHON_ARGUMENTS = [
+    '--ext', 'autoreload',
+    '-c', '%autoreload 2',
+    '-i',
+]
+
 
 # CREDENTIALS
 CLIENT_SECRET = "537e1b43ca649492371aea1e48c6ac0c7c23897b"

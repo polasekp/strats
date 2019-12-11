@@ -52,6 +52,5 @@ recreatevenv:
 updatevenv:
 	$(PIP) install -r requirements.txt
 
-ipython:
-	venv/bin/pip install ipython && \
-	${PYTHON} manage.py shell
+shell:
+	${PYTHON} manage.py shell_plus
