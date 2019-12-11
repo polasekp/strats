@@ -1,3 +1,5 @@
+import math
+
 from chamber.models import SmartModel
 from chamber.utils.datastructures import ChoicesNumEnum
 from django.db import models
@@ -85,7 +87,27 @@ class Activity(SmartModel):
 
     @property
     def other_athletes_emoji(self):
-        return " " + (self.athlete_count - 1) * "👨" if self.athlete_count > 1 else ""
+        return " " + (self.athlete_count - 1) * f"👨" if self.athlete_count > 1 else ""
+
+    @property
+    def kudos_emoji(self):
+        kudos_ceil = math.ceil(self.kudos_count/10)
+        return " " + kudos_ceil * "👍" + f" {self.kudos_count}" if kudos_ceil > 0 else ""
+
+    @property
+    def kudos_emoji_floor(self):
+        kudos_floor = math.floor(self.kudos_count/10)
+        return " " + kudos_floor * "👍" if kudos_floor > 0 else ""
+
+    @property
+    def emoji_description(self):
+        join_items = [f"{self.distance_km} km", self.other_athletes_emoji, self.kudos_emoji]
+        return " | ".join(filter(None, join_items))
+
+    @property
+    def emoji_description_2(self):
+        join_items = [f"{self.distance_km} km", self.other_athletes_emoji, self.kudos_emoji_floor]
+        return " ".join(filter(None, join_items))
 
     @property
     def style_emoji(self):

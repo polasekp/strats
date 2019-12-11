@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import datetime
 
 from django.http import HttpResponse
 from django.views.generic import TemplateView
@@ -71,5 +72,9 @@ class ActivitiesView(TemplateView):
             }
 
             context['activities'][year] = self.queryset.filter(start__year=year).order_by("start")
+
+        # last_day = datetime(2019, 12, 15).day
+        # today = datetime.now().day
+        # remaining_phases = last_day - today
 
         return context

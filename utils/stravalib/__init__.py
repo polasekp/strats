@@ -19,8 +19,8 @@ def get_access_and_refresh_token():
 
 
 def get_strava_client():
-    # access_token, _ = get_access_and_refresh_token()
+    access_token, _ = get_access_and_refresh_token()
     # print(access_token)
-    access_token = "7cf50f65a27fa9263147f8b1c3608707235fd198"
+    # access_token = "7cf50f65a27fa9263147f8b1c3608707235fd198"
     client = Client(access_token=access_token)
     return client
