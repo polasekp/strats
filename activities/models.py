@@ -23,7 +23,7 @@ class Activity(SmartModel):
 
     name = models.CharField(verbose_name='name', max_length=255, null=False, blank=False)
     description = models.TextField(blank=True)
-    strava_id = models.PositiveIntegerField(verbose_name='strava ID', null=True, blank=True)
+    strava_id = models.PositiveIntegerField(verbose_name='strava ID', null=True, blank=True, unique=True)
     athlete_id = models.PositiveIntegerField(verbose_name='athlete ID')
     external_id = models.CharField(verbose_name='external ID', max_length=255, null=True, blank=True)
     device_name = models.CharField(verbose_name='device name', max_length=255, blank=True)
@@ -36,7 +36,7 @@ class Activity(SmartModel):
                                             blank=True)
     max_heartrate = models.PositiveIntegerField(verbose_name='elevation gain', null=True, blank=True)
     calories = models.PositiveIntegerField(verbose_name='calories', null=True, blank=True)
-    average_temp = models.PositiveIntegerField(verbose_name='average temp', null=True, blank=True)
+    average_temp = models.IntegerField(verbose_name='average temp', null=True, blank=True)
     average_cadence = models.DecimalField(verbose_name='average cadence', decimal_places=1, max_digits=5, null=True,
                                           blank=True)
     start = models.DateTimeField(verbose_name='start', null=False, blank=False)
@@ -69,7 +69,7 @@ class Activity(SmartModel):
     tags = models.ManyToManyField('Tag', verbose_name='tags', related_name='activities', blank=True)
 
     def __str__(self):
-        return f'{str.upper(self.TYPE.get_label(self.type))} ------------ {self.name} ------------ {self.tags_formatted}'
+        return f'{str.upper(self.TYPE.get_label(self.type))} ------- {self.name} ------ {self.tags_formatted}' if self.id else ""
 
     @property
     def start_date_formatted(self):
@@ -82,6 +82,20 @@ class Activity(SmartModel):
     @property
     def other_athletes_count(self):
         return self.athlete_count - 1
+
+    @property
+    def other_athletes_emoji(self):
+        return " " + (self.athlete_count - 1) * "👨" if self.athlete_count > 1 else ""
+
+    @property
+    def style_emoji(self):
+        tag_names = self.tags.values_list("name", flat=True)
+        if "classic" in tag_names:
+            return "🎿"
+        elif "skate" in tag_names:
+            return "⛸️"
+        else:
+            return "❔"
 
     @property
     def tags_formatted(self):

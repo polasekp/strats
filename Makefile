@@ -51,6 +51,3 @@ recreatevenv:
 
 updatevenv:
 	$(PIP) install -r requirements.txt
-
-shell:
-	${PYTHON} manage.py shell_plus

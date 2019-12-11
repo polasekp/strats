@@ -39,7 +39,7 @@ class ActivitiesView(TemplateView):
         context["years"] = years
         context["col_names"] = [
             "km", "čas", "elevation gian", "avg km/h", "km/aktivita ", "celkem aktivit", "avg cadence",
-            "avg tep", "avg teplota", "nejdelsi", "kudos", "nej kudos", "fotek"
+            "avg tep", "avg teplota", "nejdelsi", "kudos", "nej kudos", "fotek", "proflákáno (čas)", "proflákáno (%)"
         ]
         context['activities'] = {}
         context['activities_stats'] = {}
@@ -49,6 +49,8 @@ class ActivitiesView(TemplateView):
             total_km = sum_distance(year_activities)
             longest_activity = year_activities.order_by("-distance")[0]
             most_kudos_activity = year_activities.order_by("-kudos_count")[0]
+            elapsed_time = sum_field(year_activities, "elapsed_time")
+            waiting_time = elapsed_time - sum_field(year_activities, "moving_time")
 
             context['activities_stats'][year] = {
                 "total_km": total_km,
@@ -64,6 +66,8 @@ class ActivitiesView(TemplateView):
                 "sum_kudos": sum_field(year_activities, "kudos_count"),
                 "kudos_max": (most_kudos_activity.kudos_count, most_kudos_activity.strava_id),
                 "sum_photos": sum_field(year_activities, "photo_count"),
+                "waiting_time": waiting_time,
+                "waiting_time_percent": round(waiting_time / elapsed_time * 100),
             }
 
             context['activities'][year] = self.queryset.filter(start__year=year).order_by("start")

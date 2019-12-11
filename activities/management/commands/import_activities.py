@@ -31,18 +31,19 @@ def set_style_tags():
     #         activity.tags.add(cl_tag)
 
 
-def update_activities():
-    for activity in Activity.objects.filter(changed_at__lt=datetime.datetime.now() - datetime.timedelta(hours=1)):
+def refresh_mff_activities():
+    mff_tag = Tag.objects.get(name="MFF_misecky")
+    for activity in Activity.objects.filter(start__year=2019, tags__in=[mff_tag]):
         print(f"Updating activity ID {activity.strava_id}")
         activity_strava = client.get_activity(activity.strava_id)
-        activity.pr_count = activity_strava.pr_count
-        activity.average_cadence = round(Decimal(activity_strava.average_cadence), 1) if activity_strava.average_cadence else None
-        activity.device_name = activity_strava.device_name if activity_strava.device_name else "",
-        activity.external_id = activity_strava.external_id
-        activity.flagged = activity_strava.flagged
-        activity.has_heartrate = activity_strava.has_heartrate
-        activity.manual = activity_strava.manual
-        activity.visibility = getattr(activity_strava, "visibility", "")
+        # activity.pr_count = activity_strava.pr_count
+        # activity.average_cadence = round(Decimal(activity_strava.average_cadence), 1) if activity_strava.average_cadence else None
+        # activity.device_name = activity_strava.device_name if activity_strava.device_name else "",
+        # activity.external_id = activity_strava.external_id
+        # activity.flagged = activity_strava.flagged
+        # activity.has_heartrate = activity_strava.has_heartrate
+        # activity.manual = activity_strava.manual
+        # activity.visibility = getattr(activity_strava, "visibility", "")
         activity.kudos_count = activity_strava.kudos_count
         activity.comment_count = activity_strava.comment_count
         activity.save()
@@ -54,12 +55,12 @@ def import_activities(before=None, after=None, limit=settings.DEFAULT_DOWNLOAD_L
     new_gear_count = 0
     activities = client.get_activities(after=after, before=before, limit=limit)
     for e, activity in enumerate(activities, start=1):
-        if Activity.objects.filter(start=activity.start_date).exists():
+        if Activity.objects.filter(strava_id=activity.id).exists():
             continue
         # If not fast, lets get detailed information
         if not fast:
             activity = client.get_activity(activity.id)
-        print(f"Creating activity ID {activity.id}...   ({e}/{limit})")
+        print(f"Creating activity ID {activity.id}   ({e}/{limit})")
         created_activity = create_activity_from_strava(activity)
         activities_count += 1
         if create_and_add_gear_to_activity_if_needed(activity, client):
@@ -95,8 +96,11 @@ class Command(BaseCommand):
         else:
             fast = True
 
-        # after = datetime.datetime(2019, 12, 7)
-        # before = datetime.datetime(2019, 12, 23)
+        # after = datetime.datetime(2019, 12, 10)
+        # after = None
+        # before = datetime.datetime(2014, 7, 20)
+        # limit = 1000
+
         fast = False
         print(f"Importing activities -- after: {after}, before: {before}, limit: {limit}, fast: {fast}")
-        import_activities(after=after, before=before, limit=30, fast=fast)
+        import_activities(after=after, before=before, limit=limit, fast=fast)
