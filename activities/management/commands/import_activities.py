@@ -34,7 +34,7 @@ def set_style_tags():
 def refresh_mff_activities():
     mff_tag = Tag.objects.get(name="MFF_misecky")
     for activity in Activity.objects.filter(start__year=2019, tags__in=[mff_tag]):
-        print(f"Updating activity ID {activity.strava_id}")
+        print(f"Refreshing activity ID {activity.strava_id}")
         activity_strava = client.get_activity(activity.strava_id)
         # activity.pr_count = activity_strava.pr_count
         # activity.average_cadence = round(Decimal(activity_strava.average_cadence), 1) if activity_strava.average_cadence else None
@@ -46,6 +46,8 @@ def refresh_mff_activities():
         # activity.visibility = getattr(activity_strava, "visibility", "")
         activity.kudos_count = activity_strava.kudos_count
         activity.comment_count = activity_strava.comment_count
+        activity.athlete_count = activity_strava.athlete_count
+        activity.photo_count = activity_strava.total_photo_count
         activity.save()
 
 
@@ -104,3 +106,4 @@ class Command(BaseCommand):
         fast = False
         print(f"Importing activities -- after: {after}, before: {before}, limit: {limit}, fast: {fast}")
         import_activities(after=after, before=before, limit=limit, fast=fast)
+        # refresh_mff_activities()
