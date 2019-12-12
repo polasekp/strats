@@ -106,4 +106,4 @@ class Command(BaseCommand):
         fast = False
         print(f"Importing activities -- after: {after}, before: {before}, limit: {limit}, fast: {fast}")
         import_activities(after=after, before=before, limit=limit, fast=fast)
-        # refresh_mff_activities()
+        refresh_mff_activities()
