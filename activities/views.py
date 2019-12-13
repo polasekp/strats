@@ -1,9 +1,9 @@
 from decimal import Decimal
-from datetime import datetime
 
+from django.db.models import Sum, Avg, Max
 from django.http import HttpResponse
 from django.views.generic import TemplateView
-from django.db.models import Sum, Avg, Max
+
 from activities.models import Activity, Tag
 
 
@@ -51,13 +51,15 @@ class ActivitiesView(TemplateView):
             longest_activity = year_activities.order_by("-distance")[0]
             most_kudos_activity = year_activities.order_by("-kudos_count")[0]
             elapsed_time = sum_field(year_activities, "elapsed_time")
-            waiting_time = elapsed_time - sum_field(year_activities, "moving_time")
+            moving_time = sum_field(year_activities, "moving_time")
+            waiting_time = elapsed_time - moving_time
+            avg_speed = round(total_km / Decimal(moving_time.total_seconds()/3600), 1)
 
             context['activities_stats'][year] = {
                 "total_km": total_km,
                 "sum_hod": sum_field(year_activities, "moving_time"),
                 "elevation_gain": sum_field(year_activities, "elevation_gain"),
-                "avg_speed": round(avg_field(year_activities, "average_speed") * Decimal(3.6), 1),
+                "avg_speed": avg_speed,
                 "avg_per_activity": round(total_km / year_activities.count(), 1),
                 "activities_count": year_activities.count(),
                 "avg_cadence": avg_field(year_activities, "average_cadence"),
