@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>MFF Mísečky</title>
+<base target="_blank">
 
 <style>
 table {
@@ -13,16 +14,18 @@ table, td, th {
     padding-left: 10px;
     padding-right: 10px;
 }
+
 </style>
 
 </head>
 <body>
 <h1>MFF Activities</h1>
 
+
 <table>
 <tr>
     <th>rok</th>
-    {% for col_name in col_names  %}
+    {% for col_name in column_names  %}
         <th> {{ col_name }} </th>
     {% endfor %}
 </tr>
@@ -30,13 +33,13 @@ table, td, th {
 {% for year, activities_stats in activities_stats.items %}
     <tr>
     <td>{{ year }}</td>
-    {% for stat_name, stat_value in activities_stats.items %}
-        {% if stat_name in "longest_distance,kudos_max" %}
+    {% for item in activities_stats %}
+        {% if item.0 == "strava_link" %}
             <td>
-                <a href="https://www.strava.com/activities/{{ stat_value.1 }}">{{ stat_value.0 }}</a>
+                <a href="https://www.strava.com/activities/{{ item.2.1 }}">{{ item.2.0 }}</a>
             </td>
         {% else %}
-            <td> {{ stat_value }} </td>
+            <td> {{ item.2 }} </td>
         {% endif %}
     {% endfor %}
     </tr>

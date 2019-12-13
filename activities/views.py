@@ -36,12 +36,8 @@ class ActivitiesView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        years = reversed(range(2013, 2020))
+        years = [year for year in reversed(range(2013, 2020))]
         context["years"] = years
-        context["col_names"] = [
-            "km", "čas", "elevation gian", "avg km/h", "km/aktivita ", "celkem aktivit", "avg cadence",
-            "avg tep", "avg teplota", "nejdelsi", "kudos", "nej kudos", "fotek", "proflákáno (čas)", "proflákáno (%)"
-        ]
         context['activities'] = {}
         context['activities_stats'] = {}
 
@@ -55,25 +51,27 @@ class ActivitiesView(TemplateView):
             waiting_time = elapsed_time - moving_time
             avg_speed = round(total_km / Decimal(moving_time.total_seconds()/3600), 1)
 
-            context['activities_stats'][year] = {
-                "total_km": total_km,
-                "sum_hod": sum_field(year_activities, "moving_time"),
-                "elevation_gain": sum_field(year_activities, "elevation_gain"),
-                "avg_speed": avg_speed,
-                "avg_per_activity": round(total_km / year_activities.count(), 1),
-                "activities_count": year_activities.count(),
-                "avg_cadence": avg_field(year_activities, "average_cadence"),
-                "avg_heartrate": avg_field(year_activities, "average_heartrate"),
-                "avg_temperature": avg_field(year_activities, "average_temp"),
-                "longest_distance": (round(longest_activity.distance/1000, 1), longest_activity.strava_id),
-                "sum_kudos": sum_field(year_activities, "kudos_count"),
-                "kudos_max": (most_kudos_activity.kudos_count, most_kudos_activity.strava_id),
-                "sum_photos": sum_field(year_activities, "photo_count"),
-                "waiting_time": waiting_time,
-                "waiting_time_percent": round(waiting_time / elapsed_time * 100),
-            }
+            context['activities_stats'][year] = [
+                ("", "km", total_km),
+                ("", "čas", sum_field(year_activities, "moving_time")),
+                ("", "elevation gain", sum_field(year_activities, "elevation_gain")),
+                ("", "avg speed", avg_speed),
+                ("", "km/aktivita", round(total_km / year_activities.count(), 1)),
+                ("", "celkem fází", year_activities.count()),
+                ("", "avg cadence", avg_field(year_activities, "average_cadence")),
+                ("", "avg tep", avg_field(year_activities, "average_heartrate")),
+                ("", "avg teplota", avg_field(year_activities, "average_temp")),
+                ("strava_link", "nejdelší", (round(longest_activity.distance/1000, 1), longest_activity.strava_id)),
+                ("", "kudos", sum_field(year_activities, "kudos_count")),
+                ("strava_link", "kudos max", (most_kudos_activity.kudos_count, most_kudos_activity.strava_id)),
+                ("", "fotek", sum_field(year_activities, "photo_count")),
+                ("", "proflákáno", waiting_time),
+                ("", "proflákáno (%)", round(waiting_time / elapsed_time * 100)),
+            ]
 
             context['activities'][year] = self.queryset.filter(start__year=year).order_by("start")
+            context["dict"] = {"key": "test value"}
+            context["column_names"] = [item[1] for item in context['activities_stats'][years[0]]]
 
         # last_day = datetime(2019, 12, 15).day
         # today = datetime.now().day
