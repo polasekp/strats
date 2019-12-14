@@ -13,7 +13,7 @@ def index(request):
 
 def sum_distance(queryset):
     meters = queryset.aggregate(total_m=Sum("distance"))["total_m"]
-    return round(meters/1000)
+    return round(meters/1000) if meters else None
 
 
 def sum_field(queryset, field):
@@ -32,7 +32,7 @@ def max_field(queryset, field):
 class ActivitiesView(TemplateView):
     template_name = 'activities.html'
     mff_tag = Tag.objects.get(name="MFF_misecky")
-    queryset = Activity.objects.filter(tags__in=[mff_tag])
+    queryset = Activity.objects.filter(tags__in=[mff_tag], type=Activity.TYPE.XC_SKI)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -53,6 +53,8 @@ class ActivitiesView(TemplateView):
 
             context['activities_stats'][year] = [
                 ("", "km", total_km),
+                ("", "skate", sum_distance(year_activities.filter(tags__name="skate"))),
+                ("", "klasika", sum_distance(year_activities.filter(tags__name="classic"))),
                 ("", "čas", sum_field(year_activities, "moving_time")),
                 ("", "elevation gain", sum_field(year_activities, "elevation_gain")),
                 ("", "avg speed", avg_speed),
