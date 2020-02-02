@@ -1,21 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Student_Show</title>
+<title>MFF Mísečky</title>
+<base target="_blank">
+
+<style>
+table {
+    border-collapse: collapse;
+}
+
+table, td, th {
+  border: 1px solid black;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+</style>
+
 </head>
 <body>
 <h1>MFF Activities</h1>
 
 
-{% if activities_2018 %}
-    <ul>
-    {% for activity in activities_2018 %}
-        <li><a href="/polls/{{ activity.id }}/">{{ activity.name }}</a></li>
+<table>
+<tr>
+    <th>rok</th>
+    {% for col_name in column_names  %}
+        <th> {{ col_name }} </th>
     {% endfor %}
-    </ul>
-{% else %}
-    <p>No activities are available.</p>
-{% endif %}
+</tr>
+
+{% for year, activities_stats in activities_stats.items %}
+    <tr>
+    <td>{{ year }}</td>
+    {% for item in activities_stats %}
+        {% if item.0 == "strava_link" %}
+            <td>
+                <a href="https://www.strava.com/activities/{{ item.2.1 }}">{{ item.2.0 }}</a>
+            </td>
+        {% else %}
+            <td> {{ item.2 }} </td>
+        {% endif %}
+    {% endfor %}
+    </tr>
+{% endfor %}
+</table>
+
+
+{% for year, year_activities in activities.items %}
+    <h1>{{ year }}</h1>
+    {% if year_activities %}
+        <ul>
+        {% for activity in year_activities %}
+            <li>
+            {{ activity.start_date_formatted }} {{ activity.style_emoji }}
+                <a href="https://www.strava.com/activities/{{ activity.strava_id }}">{{ activity.name }}</a>
+                ({{ activity.emoji_description_2 }})
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No activities are available.</p>
+    {% endif %}
+{% endfor %}
 
 </body>
 </html>
