@@ -4,6 +4,9 @@ from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from decimal import Decimal
 from datetime import date
+import json
+
+JSON_NAME = "strats_json"
 
 
 STRAVA_ACTIVITY_TYPE_TO_ACTIVITY_TYPE = {
@@ -69,7 +72,30 @@ def create_and_add_gear_to_activity_if_needed(activity, strava_client):
     return False
 
 
+def get_json_from_activity_description(description):
+    json_start = description.find(JSON_NAME)
+    if json_start != -1:
+        json_start = json_start + len(JSON_NAME)
+        json_start = description.find("{", json_start)
+        json_end = description.find("}", json_start)
+        json_substring = description[json_start:json_end + 1]
+        return json.loads(json_substring)
+    return None
+
+
+def get_activity_num_field(activity, field, strats_json):
+    if strats_json and strats_json.get(field):
+        return strats_json.get(field)
+    return getattr(activity, field)._num
+
+
 def create_activity_from_strava(activity):
+    # first check description if there are is json with corrected data
+    description = activity.description if activity.description else ""
+    strats_json = None
+    if description:
+        strats_json = get_json_from_activity_description(description)
+
     try:
         activity = Activity.objects.create(
             name=activity.name,
@@ -87,7 +113,7 @@ def create_activity_from_strava(activity):
             start=activity.start_date,
             moving_time=activity.moving_time,
             elapsed_time=activity.elapsed_time,
-            elevation_gain=activity.total_elevation_gain._num,
+            elevation_gain=get_activity_num_field(activity, "total_elevation_gain", strats_json),
             type=STRAVA_ACTIVITY_TYPE_TO_ACTIVITY_TYPE.get(activity.type, Activity.TYPE.OTHER),
             kudos_count=activity.kudos_count,
             photo_count=activity.total_photo_count,
