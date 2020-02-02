@@ -52,7 +52,7 @@ def refresh_mff_activities():
 
 
 def import_activities(before=None, after=None, limit=settings.DEFAULT_DOWNLOAD_LIMIT, fast=True):
-    create_tags_if_needed()
+    # create_tags_if_needed()
     activities_count = 0
     new_gear_count = 0
     activities = client.get_activities(after=after, before=before, limit=limit)
@@ -82,28 +82,12 @@ class Command(BaseCommand):
         after = None
         before = None
         if Activity.objects.count() > 0:
-            # before = (datetime.datetime.now() - datetime.timedelta(days=200))
             after = localtime(Activity.objects.first().start)
-            # before = localtime(Activity.objects.last().start)
+            # after = datetime.datetime.now() - datetime.timedelta(weeks=5)
         else:
-            # after = (datetime.datetime.now() - datetime.timedelta(days=2))
             before = datetime.datetime.now()
 
         limit = int(options["limit"]) if options["limit"] else settings.DEFAULT_DOWNLOAD_LIMIT
-        if options["fast"] != "":
-            if options["fast"].lower() in ["true", "1"]:
-                fast = True
-            else:
-                fast = False
-        else:
-            fast = True
-
-        # after = datetime.datetime(2019, 12, 10)
-        # after = None
-        # before = datetime.datetime(2014, 7, 20)
-        # limit = 1000
-
         fast = False
         print(f"Importing activities -- after: {after}, before: {before}, limit: {limit}, fast: {fast}")
         import_activities(after=after, before=before, limit=limit, fast=fast)
-        refresh_mff_activities()
