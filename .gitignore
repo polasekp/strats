@@ -12,3 +12,9 @@ bin/
 
 # VIRTUAL ENV
 venv/
+
+# DOWNLOADS
+downloads_garmin
+
+# SECRETS
+secrets.py

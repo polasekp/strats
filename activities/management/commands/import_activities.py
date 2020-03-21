@@ -1,16 +1,15 @@
 import datetime
-from decimal import Decimal
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import localtime
 
 from activities.models import Activity, Tag
-from utils.models.activities import create_activity_from_strava, create_and_add_gear_to_activity_if_needed, \
-    create_tags_if_needed, add_tag_to_activity_if_needed
-from utils.stravalib import get_strava_client
+from utils.models import create_or_update_activity_from_strava, create_and_add_gear_to_activity_if_needed, \
+    add_tag_to_activity_if_needed, create_tags_if_needed
+from utils.strava import StravaHelper
 
 
-client = get_strava_client()
+STRAVA = StravaHelper()
 
 
 def set_style_tags():
@@ -35,7 +34,7 @@ def refresh_mff_activities():
     mff_tag = Tag.objects.get(name="MFF_misecky")
     for activity in Activity.objects.filter(start__year=2019, tags__in=[mff_tag]):
         print(f"Refreshing activity ID {activity.strava_id}")
-        activity_strava = client.get_activity(activity.strava_id)
+        activity_strava = STRAVA.client.get_activity(activity.strava_id)
         # activity.pr_count = activity_strava.pr_count
         # activity.average_cadence = round(Decimal(activity_strava.average_cadence), 1) if activity_strava.average_cadence else None
         # activity.device_name = activity_strava.device_name if activity_strava.device_name else "",
@@ -52,20 +51,21 @@ def refresh_mff_activities():
 
 
 def import_activities(before=None, after=None, limit=settings.DEFAULT_DOWNLOAD_LIMIT, fast=True):
-    # create_tags_if_needed()
+    create_tags_if_needed()
     activities_count = 0
     new_gear_count = 0
-    activities = client.get_activities(after=after, before=before, limit=limit)
+    activities = STRAVA.client.get_activities(after=after, before=before, limit=limit)
     for e, activity in enumerate(activities, start=1):
         if Activity.objects.filter(strava_id=activity.id).exists():
             continue
         # If not fast, lets get detailed information
         if not fast:
-            activity = client.get_activity(activity.id)
+            activity = STRAVA.client.get_activity(activity.id)
         print(f"Creating activity ID {activity.id}   ({e}/{limit})")
-        created_activity = create_activity_from_strava(activity)
+        created_activity = create_or_update_activity_from_strava(activity)
+        print(created_activity)
         activities_count += 1
-        if create_and_add_gear_to_activity_if_needed(activity, client):
+        if create_and_add_gear_to_activity_if_needed(activity, STRAVA.client):
             new_gear_count += 1
         add_tag_to_activity_if_needed(created_activity)
 

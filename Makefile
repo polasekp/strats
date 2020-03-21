@@ -51,3 +51,6 @@ recreatevenv:
 
 updatevenv:
 	$(PIP) install -r requirements.txt
+
+black:
+	black --target-version py37 -l 120 --exclude venv .

@@ -1,11 +1,28 @@
+import logging
 import math
+import time
 
 from chamber.models import SmartModel
 from chamber.utils.datastructures import ChoicesNumEnum
 from django.db import models
 
+logger = logging.getLogger(__name__)
+
+
+class StravaToken(SmartModel):
+    access_token = models.CharField(max_length=255)
+    refresh_token = models.CharField(max_length=255)
+    expires_at = models.PositiveIntegerField()
+
+    @property
+    def is_expired(self):
+        return time.time() > self.expires_at
+
 
 class Activity(SmartModel):
+
+    _STRAVA_HELPER = None
+    _GARMIN_HELPER = None
 
     TYPE = ChoicesNumEnum(
         ('RUN', 'Run', 1),
@@ -21,6 +38,7 @@ class Activity(SmartModel):
         ('ICE_SKATE', 'Ice Skate', 11),
         ('WORKOUT', 'Workout', 12),
         ('OTHER', 'Other', 13),
+        ('VIRTUAL_RIDE', 'Virtual Ride', 14),
     )
 
     name = models.CharField(verbose_name='name', max_length=255, null=False, blank=False)
@@ -74,6 +92,22 @@ class Activity(SmartModel):
         return f'{str.upper(self.TYPE.get_label(self.type))} ------- {self.name} ------ {self.tags_formatted}' if self.id else ""
 
     @property
+    def strava_helper(self):
+        if not self._STRAVA_HELPER:
+            from utils.strava import StravaHelper
+            # we want to set it as class attribute (so that not needed to create fot each instance)
+            Activity._STRAVA_HELPER = StravaHelper()
+        return self._STRAVA_HELPER
+
+    @property
+    def garmin_helper(self):
+        if not self._GARMIN_HELPER:
+            from utils.garmin import GarminHelper
+            # we want to set it as class attribute (so that not needed to create fot each instance)
+            Activity._GARMIN_HELPER = GarminHelper()
+        return self._GARMIN_HELPER
+
+    @property
     def start_date_formatted(self):
         return self.start.strftime("%d.%m.")
 
@@ -125,6 +159,27 @@ class Activity(SmartModel):
             return ', '.join([f'#{tag}' for tag in self.tags.all().values_list('name', flat=True)])
         else:
             return ''
+
+    def get_garmin_id(self):
+        """The external_id of a garmin activity is in format `garmin_push_4676669572`"""
+        try:
+            external_id = self.external_id.split("_")
+        except AttributeError:
+            return
+        if external_id[0] != "garmin" or len(external_id) != 3:
+            return
+        return external_id[-1]
+
+    def refresh_from_strava(self):
+        self.strava_helper.refresh_activity(self)
+        self.refresh_from_db()
+
+    def download_garmin_fit(self):
+        garmin_id = self.get_garmin_id()
+        if not garmin_id:
+            logger.warning(f"Requested to download not garmin activity. {self.strava_id}")
+            return
+        self.garmin_helper.download_activity(garmin_id)
 
     class Meta:
         ordering = ('-start',)
