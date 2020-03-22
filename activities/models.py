@@ -4,9 +4,13 @@ import time
 
 from chamber.models import SmartModel
 from chamber.utils.datastructures import ChoicesNumEnum
+from django.conf import settings
 from django.db import models
 
 logger = logging.getLogger(__name__)
+
+STRAVA_HELPER = settings.STRAVA_HELPER
+GARMIN_HELPER = settings.GARMIN_HELPER
 
 
 class StravaToken(SmartModel):
@@ -20,9 +24,6 @@ class StravaToken(SmartModel):
 
 
 class Activity(SmartModel):
-
-    _STRAVA_HELPER = None
-    _GARMIN_HELPER = None
 
     TYPE = ChoicesNumEnum(
         ('RUN', 'Run', 1),
@@ -92,22 +93,6 @@ class Activity(SmartModel):
         return f'{str.upper(self.TYPE.get_label(self.type))} ------- {self.name} ------ {self.tags_formatted}' if self.id else ""
 
     @property
-    def strava_helper(self):
-        if not self._STRAVA_HELPER:
-            from utils.strava import StravaHelper
-            # we want to set it as class attribute (so that not needed to create fot each instance)
-            Activity._STRAVA_HELPER = StravaHelper()
-        return self._STRAVA_HELPER
-
-    @property
-    def garmin_helper(self):
-        if not self._GARMIN_HELPER:
-            from utils.garmin import GarminHelper
-            # we want to set it as class attribute (so that not needed to create fot each instance)
-            Activity._GARMIN_HELPER = GarminHelper()
-        return self._GARMIN_HELPER
-
-    @property
     def start_date_formatted(self):
         return self.start.strftime("%d.%m.")
 
@@ -171,7 +156,11 @@ class Activity(SmartModel):
         return external_id[-1]
 
     def refresh_from_strava(self):
-        self.strava_helper.refresh_activity(self)
+        from utils.models import create_or_update_activity_from_strava
+
+        logger.info(f"Refreshing activity {self.strava_id} from Strava")
+        strava_activity = STRAVA_HELPER.client.get_activity(self.strava_id)
+        create_or_update_activity_from_strava(strava_activity)
         self.refresh_from_db()
 
     def download_garmin_fit(self):
@@ -179,7 +168,7 @@ class Activity(SmartModel):
         if not garmin_id:
             logger.warning(f"Requested to download not garmin activity. {self.strava_id}")
             return
-        self.garmin_helper.download_activity(garmin_id)
+        GARMIN_HELPER.download_activity(garmin_id)
 
     class Meta:
         ordering = ('-start',)

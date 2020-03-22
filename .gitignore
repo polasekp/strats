@@ -17,4 +17,4 @@ venv/
 downloads_garmin
 
 # SECRETS
-secrets.py
+my_secrets.py

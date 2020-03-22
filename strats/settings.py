@@ -1,6 +1,9 @@
 import logging
 import os
 
+from utils.garmin import GarminHelper
+from utils.strava import StravaHelper
+
 logging.basicConfig(level=logging.INFO)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -131,7 +134,11 @@ IPYTHON_ARGUMENTS = [
     '-i',
 ]
 
-DEFAULT_DOWNLOAD_LIMIT = 50
+# limit used when importing activities
+DEFAULT_IMPORT_LIMIT = 50
 
 GARMIN_DOWNLOAD_DIR_NAME = "downloads_garmin"
 GARMIN_DOWNLOAD_DIR = os.path.join(BASE_DIR, GARMIN_DOWNLOAD_DIR_NAME)
+
+GARMIN_HELPER = GarminHelper()
+STRAVA_HELPER = StravaHelper()

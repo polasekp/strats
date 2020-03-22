@@ -1,5 +1,5 @@
 """
-Copy this content into new file `secrets.py` and update with your secrets
+Copy this content into new file `my_secrets.py` and update with your secrets
 """
 
 # STRAVA CREDENTIALS

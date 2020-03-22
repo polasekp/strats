@@ -1,10 +1,12 @@
-from activities.models import Activity, Gear, Tag
+import json
+from datetime import date
+from decimal import Decimal
+
 from chamber.shortcuts import get_object_or_none
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
-from decimal import Decimal
-from datetime import date
-import json
+
+from activities.models import Activity, Gear, Tag
 
 JSON_NAME = "strats_json"
 
