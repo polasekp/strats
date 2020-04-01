@@ -90,10 +90,24 @@ class Activity(SmartModel):
     tags = models.ManyToManyField('Tag', verbose_name='tags', related_name='activities', blank=True)
 
     def __str__(self):
-        return f'{str.upper(self.TYPE.get_label(self.type))} ------- {self.name} ------ {self.tags_formatted}' if self.id else ""
+        return f'{str.upper(self.TYPE.get_label(self.type))} -- {self.name} -- {self.tags_formatted}' if self.id else ""
+
+    def __repr__(self):
+        if self.id:
+            return f'<{self.start_date_formatted}: {str.upper(self.TYPE.get_label(self.type))} -- {self.name_short} -- {self.tags_formatted}>'
+        else:
+            return super().__repr__()
+
+    @property
+    def name_short(self):
+        return self.name[:20]
 
     @property
     def start_date_formatted(self):
+        return self.start.strftime("%d.%m.%y")
+
+    @property
+    def start_day_month(self):
         return self.start.strftime("%d.%m.")
 
     @property
@@ -145,7 +159,8 @@ class Activity(SmartModel):
         else:
             return ''
 
-    def get_garmin_id(self):
+    @property
+    def garmin_id(self):
         """The external_id of a garmin activity is in format `garmin_push_4676669572`"""
         try:
             external_id = self.external_id.split("_")
@@ -154,6 +169,20 @@ class Activity(SmartModel):
         if external_id[0] != "garmin" or len(external_id) != 3:
             return
         return external_id[-1]
+
+    @property
+    def strava_link(self):
+        link = f"https://www.strava.com/activities/{self.strava_id}"
+        print(link)
+        return link
+
+    @property
+    def garmin_link(self):
+        garmin_id = self.garmin_id
+        if garmin_id:
+            link = f"https://connect.garmin.com/activity/{garmin_id}"
+            print(link)
+            return link
 
     def refresh_from_strava(self):
         from utils.models import create_or_update_activity_from_strava
@@ -164,7 +193,7 @@ class Activity(SmartModel):
         self.refresh_from_db()
 
     def download_garmin_fit(self):
-        garmin_id = self.get_garmin_id()
+        garmin_id = self.garmin_id
         if not garmin_id:
             logger.warning(f"Requested to download not garmin activity. {self.strava_id}")
             return

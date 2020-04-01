@@ -53,7 +53,7 @@ table, td, th {
         <ul>
         {% for activity in year_activities %}
             <li>
-            {{ activity.start_date_formatted }} {{ activity.style_emoji }}
+            {{ activity.start_day_month }} {{ activity.style_emoji }}
                 <a href="https://www.strava.com/activities/{{ activity.strava_id }}">{{ activity.name }}</a>
                 ({{ activity.emoji_description_2 }})
             </li>
