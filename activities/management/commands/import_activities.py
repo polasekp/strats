@@ -5,8 +5,12 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import localtime
 
 from activities.models import Activity, Tag
-from utils.models import (create_or_update_activity_from_strava, create_and_add_gear_to_activity_if_needed,
-                          add_tag_to_activity_if_needed, create_tags_if_needed)
+from utils.models import (
+    create_or_update_activity_from_strava,
+    create_and_add_gear_to_activity_if_needed,
+    add_tag_to_activity_if_needed,
+    create_tags_if_needed,
+)
 
 STRAVA_HELPER = settings.STRAVA_HELPER
 
@@ -21,7 +25,7 @@ def set_style_tags():
     # for activity in Activity.objects.filter(tags__name="MFF_misecky").exclude(tags__in=[ft_tag, cl_tag]):
     #     if activity.name.lower().find("zasypal jim") != -1:
     #         print(f"{activity.name}: {activity.strava_id}")
-            # activity.tags.add(ft_tag)
+    # activity.tags.add(ft_tag)
 
     # for activity in Activity.objects.filter(tags__name="MFF_misecky").exclude(tags__in=[cl_tag, ft_tag]):
     #     if activity.name.lower().find("na rovinka") != -1:
@@ -68,14 +72,14 @@ def import_activities(before=None, after=None, limit=settings.DEFAULT_IMPORT_LIM
             new_gear_count += 1
         add_tag_to_activity_if_needed(created_activity)
 
-    print(f'Successfully imported {activities_count} activities.')
-    print(f'Created {new_gear_count} new gear.')
+    print(f"Successfully imported {activities_count} activities.")
+    print(f"Created {new_gear_count} new gear.")
 
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--limit')
-        parser.add_argument('--fast')
+        parser.add_argument("--limit")
+        parser.add_argument("--fast")
 
     def handle(self, **options):
         after = None

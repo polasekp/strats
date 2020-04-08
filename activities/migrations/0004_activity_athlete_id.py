@@ -5,15 +5,13 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('activities', '0003_auto_20191210_1936'),
-    ]
+    dependencies = [("activities", "0003_auto_20191210_1936")]
 
     operations = [
         migrations.AddField(
-            model_name='activity',
-            name='athlete_id',
-            field=models.PositiveIntegerField(default=6850102, verbose_name='athlete ID'),
+            model_name="activity",
+            name="athlete_id",
+            field=models.PositiveIntegerField(default=6850102, verbose_name="athlete ID"),
             preserve_default=False,
-        ),
+        )
     ]

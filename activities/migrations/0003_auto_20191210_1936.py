@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('activities', '0002_auto_20191210_1926'),
-    ]
+    dependencies = [("activities", "0002_auto_20191210_1926")]
 
     operations = [
         migrations.AlterField(
-            model_name='activity',
-            name='external_id',
-            field=models.CharField(blank=True, max_length=255, null=True, verbose_name='external ID'),
-        ),
+            model_name="activity",
+            name="external_id",
+            field=models.CharField(blank=True, max_length=255, null=True, verbose_name="external ID"),
+        )
     ]

@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('activities', '0004_activity_athlete_id'),
-    ]
+    dependencies = [("activities", "0004_activity_athlete_id")]
 
     operations = [
         migrations.AlterField(
-            model_name='activity',
-            name='strava_id',
-            field=models.PositiveIntegerField(blank=True, null=True, unique=True, verbose_name='strava ID'),
-        ),
+            model_name="activity",
+            name="strava_id",
+            field=models.PositiveIntegerField(blank=True, null=True, unique=True, verbose_name="strava ID"),
+        )
     ]

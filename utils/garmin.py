@@ -39,5 +39,5 @@ class GarminHelper:
         logger.info(f"Downloading garmin activity {garmin_id}")
         url = f"https://connect.garmin.com/modern/proxy/download-service/files/activity/{garmin_id}"
         response = self._get_request(url)
-        with open(output_path, 'wb') as download_file:
+        with open(output_path, "wb") as download_file:
             download_file.write(response.content)

@@ -109,7 +109,9 @@ def create_or_update_activity_from_strava(activity):
                 "distance": round(Decimal(activity.distance._num), 2),
                 "average_speed": round(Decimal(activity.average_speed._num), 2),
                 "max_speed": round(Decimal(activity.max_speed._num), 2),
-                "average_heartrate": round(Decimal(activity.average_heartrate), 1) if activity.average_heartrate else None,
+                "average_heartrate": round(Decimal(activity.average_heartrate), 1)
+                if activity.average_heartrate
+                else None,
                 "max_heartrate": activity.max_heartrate if activity.max_heartrate else None,
                 "calories": activity.calories,
                 "average_temp": activity.average_temp if activity.average_temp else None,

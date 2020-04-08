@@ -5,89 +5,85 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('activities', '0001_initial'),
-    ]
+    dependencies = [("activities", "0001_initial")]
 
     operations = [
         migrations.AddField(
-            model_name='activity',
-            name='average_cadence',
-            field=models.DecimalField(blank=True, decimal_places=1, max_digits=5, null=True, verbose_name='average cadence'),
+            model_name="activity",
+            name="average_cadence",
+            field=models.DecimalField(
+                blank=True, decimal_places=1, max_digits=5, null=True, verbose_name="average cadence"
+            ),
         ),
         migrations.AddField(
-            model_name='activity',
-            name='device_name',
-            field=models.CharField(blank=True, max_length=255, verbose_name='device name'),
+            model_name="activity",
+            name="device_name",
+            field=models.CharField(blank=True, max_length=255, verbose_name="device name"),
         ),
         migrations.AddField(
-            model_name='activity',
-            name='external_id',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='external ID'),
+            model_name="activity",
+            name="external_id",
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name="external ID"),
         ),
         migrations.AddField(
-            model_name='activity',
-            name='flagged',
-            field=models.BooleanField(default=False, verbose_name='flagged'),
+            model_name="activity", name="flagged", field=models.BooleanField(default=False, verbose_name="flagged")
         ),
         migrations.AddField(
-            model_name='activity',
-            name='has_heartrate',
-            field=models.BooleanField(default=False, verbose_name='has heartrate'),
+            model_name="activity",
+            name="has_heartrate",
+            field=models.BooleanField(default=False, verbose_name="has heartrate"),
         ),
         migrations.AddField(
-            model_name='activity',
-            name='manual',
-            field=models.BooleanField(default=False, verbose_name='is manual'),
+            model_name="activity", name="manual", field=models.BooleanField(default=False, verbose_name="is manual")
         ),
         migrations.AddField(
-            model_name='activity',
-            name='pr_count',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='pr count'),
+            model_name="activity",
+            name="pr_count",
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name="pr count"),
         ),
         migrations.AddField(
-            model_name='activity',
-            name='visibility',
-            field=models.CharField(blank=True, max_length=100, verbose_name='visibility'),
+            model_name="activity",
+            name="visibility",
+            field=models.CharField(blank=True, max_length=100, verbose_name="visibility"),
         ),
         migrations.AlterField(
-            model_name='activity',
-            name='achievement_count',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='achievement count'),
+            model_name="activity",
+            name="achievement_count",
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name="achievement count"),
         ),
         migrations.AlterField(
-            model_name='activity',
-            name='average_temp',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='average temp'),
+            model_name="activity",
+            name="average_temp",
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name="average temp"),
         ),
         migrations.AlterField(
-            model_name='activity',
-            name='calories',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='calories'),
+            model_name="activity",
+            name="calories",
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name="calories"),
         ),
         migrations.AlterField(
-            model_name='activity',
-            name='comment_count',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='comment count'),
+            model_name="activity",
+            name="comment_count",
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name="comment count"),
         ),
         migrations.AlterField(
-            model_name='activity',
-            name='elevation_gain',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='elevation gain'),
+            model_name="activity",
+            name="elevation_gain",
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name="elevation gain"),
         ),
         migrations.AlterField(
-            model_name='activity',
-            name='kudos_count',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='kudos count'),
+            model_name="activity",
+            name="kudos_count",
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name="kudos count"),
         ),
         migrations.AlterField(
-            model_name='activity',
-            name='max_heartrate',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='elevation gain'),
+            model_name="activity",
+            name="max_heartrate",
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name="elevation gain"),
         ),
         migrations.AlterField(
-            model_name='activity',
-            name='photo_count',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='photo count'),
+            model_name="activity",
+            name="photo_count",
+            field=models.PositiveIntegerField(blank=True, null=True, verbose_name="photo count"),
         ),
     ]

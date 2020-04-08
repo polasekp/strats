@@ -5,23 +5,19 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('activities', '0007_auto_20200321_1413'),
-    ]
+    dependencies = [("activities", "0007_auto_20200321_1413")]
 
     operations = [
         migrations.CreateModel(
-            name='StravaToken',
+            name="StravaToken",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='created at')),
-                ('changed_at', models.DateTimeField(auto_now=True, db_index=True, verbose_name='changed at')),
-                ('access_token', models.CharField(max_length=255)),
-                ('refresh_token', models.CharField(max_length=255)),
-                ('expires_at', models.PositiveIntegerField()),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="created at")),
+                ("changed_at", models.DateTimeField(auto_now=True, db_index=True, verbose_name="changed at")),
+                ("access_token", models.CharField(max_length=255)),
+                ("refresh_token", models.CharField(max_length=255)),
+                ("expires_at", models.PositiveIntegerField()),
             ],
-            options={
-                'abstract': False,
-            },
-        ),
+            options={"abstract": False},
+        )
     ]

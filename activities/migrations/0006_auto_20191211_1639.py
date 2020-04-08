@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('activities', '0005_auto_20191211_1558'),
-    ]
+    dependencies = [("activities", "0005_auto_20191211_1558")]
 
     operations = [
         migrations.AlterField(
-            model_name='activity',
-            name='average_temp',
-            field=models.IntegerField(blank=True, null=True, verbose_name='average temp'),
-        ),
+            model_name="activity",
+            name="average_temp",
+            field=models.IntegerField(blank=True, null=True, verbose_name="average temp"),
+        )
     ]

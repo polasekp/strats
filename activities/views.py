@@ -13,7 +13,7 @@ def index(request):
 
 def sum_distance(queryset):
     meters = queryset.aggregate(total_m=Sum("distance"))["total_m"]
-    return round(meters/1000) if meters else None
+    return round(meters / 1000) if meters else None
 
 
 def sum_field(queryset, field):
@@ -30,7 +30,7 @@ def max_field(queryset, field):
 
 
 class ActivitiesView(TemplateView):
-    template_name = 'activities.html'
+    template_name = "activities.html"
     mff_tag = Tag.objects.get(name="MFF_misecky")
     queryset = Activity.objects.filter(tags__in=[mff_tag], type=Activity.TYPE.XC_SKI)
 
@@ -38,8 +38,8 @@ class ActivitiesView(TemplateView):
         context = super().get_context_data(**kwargs)
         years = [year for year in reversed(range(2013, 2020))]
         context["years"] = years
-        context['activities'] = {}
-        context['activities_stats'] = {}
+        context["activities"] = {}
+        context["activities_stats"] = {}
 
         for year in years:
             year_activities = self.queryset.filter(start__year=year)
@@ -49,9 +49,9 @@ class ActivitiesView(TemplateView):
             elapsed_time = sum_field(year_activities, "elapsed_time")
             moving_time = sum_field(year_activities, "moving_time")
             waiting_time = elapsed_time - moving_time
-            avg_speed = round(total_km / Decimal(moving_time.total_seconds()/3600), 1)
+            avg_speed = round(total_km / Decimal(moving_time.total_seconds() / 3600), 1)
 
-            context['activities_stats'][year] = [
+            context["activities_stats"][year] = [
                 ("", "km", total_km),
                 ("", "skate", sum_distance(year_activities.filter(tags__name="skate"))),
                 ("", "klasika", sum_distance(year_activities.filter(tags__name="classic"))),
@@ -63,7 +63,7 @@ class ActivitiesView(TemplateView):
                 ("", "avg cadence", avg_field(year_activities, "average_cadence")),
                 ("", "avg tep", avg_field(year_activities, "average_heartrate")),
                 ("", "avg teplota", avg_field(year_activities, "average_temp")),
-                ("strava_link", "nejdelší", (round(longest_activity.distance/1000, 1), longest_activity.strava_id)),
+                ("strava_link", "nejdelší", (round(longest_activity.distance / 1000, 1), longest_activity.strava_id)),
                 ("", "kudos", sum_field(year_activities, "kudos_count")),
                 ("strava_link", "kudos max", (most_kudos_activity.kudos_count, most_kudos_activity.strava_id)),
                 ("", "fotek", sum_field(year_activities, "photo_count")),
@@ -71,9 +71,9 @@ class ActivitiesView(TemplateView):
                 ("", "proflákáno (%)", round(waiting_time / elapsed_time * 100)),
             ]
 
-            context['activities'][year] = self.queryset.filter(start__year=year).order_by("start")
+            context["activities"][year] = self.queryset.filter(start__year=year).order_by("start")
             context["dict"] = {"key": "test value"}
-            context["column_names"] = [item[1] for item in context['activities_stats'][years[0]]]
+            context["column_names"] = [item[1] for item in context["activities_stats"][years[0]]]
 
         # last_day = datetime(2019, 12, 15).day
         # today = datetime.now().day
