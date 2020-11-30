@@ -45,13 +45,11 @@ class StravaHelper:
             self._token = self._get_strava_token()
         return self._token
 
-    @property
-    def client(self):
-        if not self._client:
-            self._client = self._init_client()
-        if self.token.is_expired:
-            self._refresh_client()
-        return self._client
+    def _init_client(self):
+        logger.info("Obtaining new strava client")
+        client = Client()
+        client.access_token = self.token.access_token
+        return client
 
     def _refresh_client(self):
         logger.info("Refreshing strava client")
@@ -66,22 +64,43 @@ class StravaHelper:
         self._client.access_token = refresh_response["access_token"]
         self.token.save()
 
-    def _init_client(self):
-        logger.info("Obtaining new strava client")
-        client = Client()
-        client.access_token = self.token.access_token
-        return client
+    @property
+    def client(self):
+        if not self._client:
+            self._client = self._init_client()
+        if self.token.is_expired:
+            self._refresh_client()
+        return self._client
 
-    # def download_activity(self, strava_id, name):
-    #     output_name = f"{strava_id}_{name}.fit"
-    #     output_path = os.path.join(settings.STRAVA_DOWNLOAD_DIR_NAME, output_name)
-    #     if os.path.exists(output_path):
-    #         logger.warning(f"Activity {output_name} already exists, skipping")
-    #         return
-    #
-    #     logger.info(f"Downloading strava activity {strava_id}")
-    #     url = f"https://www.strava.com/activities/{strava_id}/export_original"
-    #     response = self.client.protocol.get(url, check_for_errors=False)
-    #     print(response)
-    #     with open(output_path, "wb") as download_file:
-    #         download_file.write(response.content)
+    def get_activity(self, activity_id: int, include_all_efforts=False):
+        return self.client.get_activity(activity_id, include_all_efforts)
+
+    def get_activities(self, before, after, limit):
+        return self.client.get_activities(before, after, limit)
+
+    def download_gpx(self, strava_id):
+        output_name = f"{strava_id}.gpx"
+        output_path = os.path.join(settings.STRAVA_DOWNLOAD_DIR_NAME, output_name)
+        if os.path.exists(output_path):
+            logger.warning(f"Activity {output_name} already exists, skipping")
+            return
+
+        logger.info(f"Downloading strava activity {strava_id}")
+        url = f"https://www.strava.com/activities/{strava_id}/export_gpx"
+        response = self.client.protocol.get(url, check_for_errors=False)
+        with open(output_path, "wb") as download_file:
+            download_file.write(response.content)
+
+    def download_activity(self, strava_id, name):
+        output_name = f"{strava_id}_{name}.fit"
+        output_path = os.path.join(settings.STRAVA_DOWNLOAD_DIR_NAME, output_name)
+        if os.path.exists(output_path):
+            logger.warning(f"Activity {output_name} already exists, skipping")
+            return
+
+        logger.info(f"Downloading strava activity {strava_id}")
+        url = f"https://www.strava.com/activities/{strava_id}/export_original"
+        response = self.client.protocol.get(url, check_for_errors=False)
+        print(response)
+        with open(output_path, "wb") as download_file:
+            download_file.write(response.content)

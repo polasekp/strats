@@ -15,6 +15,7 @@ STRAVA_ACTIVITY_TYPE_TO_ACTIVITY_TYPE = {
     "Run": Activity.TYPE.RUN,
     "Ride": Activity.TYPE.RIDE,
     "VirtualRide": Activity.TYPE.VIRTUAL_RIDE,
+    "VirtualRun": Activity.TYPE.VIRTUAL_RUN,
     "Hike": Activity.TYPE.HIKE,
     "NordicSki": Activity.TYPE.XC_SKI,
     "RollerSki": Activity.TYPE.ROLLER_SKI,
@@ -99,7 +100,7 @@ def create_or_update_activity_from_strava(activity):
         strats_json = get_json_from_activity_description(description)
 
     try:
-        new_activity, _ = Activity.objects.update_or_create(
+        activity_instance, created = Activity.objects.update_or_create(
             strava_id=activity.id,
             defaults={
                 "name": activity.name,
@@ -120,6 +121,7 @@ def create_or_update_activity_from_strava(activity):
                 "elapsed_time": activity.elapsed_time,
                 "elevation_gain": get_activity_num_field(activity, "total_elevation_gain", strats_json),
                 "type": STRAVA_ACTIVITY_TYPE_TO_ACTIVITY_TYPE.get(activity.type, Activity.TYPE.OTHER),
+                "type_strava": activity.type,
                 "kudos_count": activity.kudos_count,
                 "photo_count": activity.total_photo_count,
                 "achievement_count": activity.achievement_count,
@@ -131,9 +133,16 @@ def create_or_update_activity_from_strava(activity):
                 "end_lat": round(Decimal(activity.end_latlng.lat), 6) if activity.end_latlng else None,
                 "end_lon": round(Decimal(activity.end_latlng.lon), 6) if activity.end_latlng else None,
                 "average_cadence": round(Decimal(activity.average_cadence), 1) if activity.average_cadence else None,
+                "average_power": int(activity.average_watts) if activity.average_watts else None,
+                "max_power": int(activity.max_watts) if activity.max_watts else None,
+                "weighted_average_power": int(activity.weighted_average_watts) if activity.weighted_average_watts else None,
+                "has_power_meter": activity.device_watts if activity.device_watts else False,
+                "kcal": int(activity.kilojoules) if activity.kilojoules else None,
+                "suffer_score": int(activity.suffer_score) if activity.suffer_score else None,
                 "flagged": activity.flagged,
                 "manual": activity.manual,
                 "visibility": getattr(activity, "visibility", ""),
+                "private": activity.private,
                 "device_name": activity.device_name if activity.device_name else "",
                 "has_heartrate": activity.has_heartrate,
                 "pr_count": activity.pr_count,
@@ -142,4 +151,4 @@ def create_or_update_activity_from_strava(activity):
     except (IntegrityError, ValidationError) as e:
         print(f"Unable to import activity {activity.start_date} {activity.name}: {e}")
         return False
-    return new_activity
+    return activity_instance

@@ -37,7 +37,7 @@ def refresh_mff_activities():
     mff_tag = Tag.objects.get(name="MFF_misecky")
     for activity in Activity.objects.filter(start__year=2019, tags__in=[mff_tag]):
         print(f"Refreshing activity ID {activity.strava_id}")
-        activity_strava = STRAVA_HELPER.client.get_activity(activity.strava_id)
+        activity_strava = STRAVA_HELPER.get_activity(activity.strava_id)
         # activity.pr_count = activity_strava.pr_count
         # activity.average_cadence = round(Decimal(activity_strava.average_cadence), 1) if activity_strava.average_cadence else None
         # activity.device_name = activity_strava.device_name if activity_strava.device_name else "",
@@ -53,18 +53,19 @@ def refresh_mff_activities():
         activity.save()
 
 
-def import_activities(before=None, after=None, limit=settings.DEFAULT_IMPORT_LIMIT, fast=True):
+def import_activities(before=None, after=None, limit=settings.DEFAULT_IMPORT_LIMIT, fast=True, perform_update=False):
     create_tags_if_needed()
     activities_count = 0
     new_gear_count = 0
-    activities = STRAVA_HELPER.client.get_activities(after=after, before=before, limit=limit)
+    activities = STRAVA_HELPER.get_activities(after=after, before=before, limit=limit)
     for e, activity in enumerate(activities, start=1):
-        if Activity.objects.filter(strava_id=activity.id).exists():
+        if Activity.objects.filter(strava_id=activity.id).exists() and not perform_update:
             continue
+        else:
+            print(f"Creating or updating activity ID {activity.id}  ({e}/{limit})")
         # If not fast, lets get detailed information
         if not fast:
-            activity = STRAVA_HELPER.client.get_activity(activity.id)
-        print(f"Creating activity ID {activity.id}   ({e}/{limit})")
+            activity = STRAVA_HELPER.get_activity(activity.id)
         created_activity = create_or_update_activity_from_strava(activity)
         print(created_activity)
         activities_count += 1
@@ -78,19 +79,23 @@ def import_activities(before=None, after=None, limit=settings.DEFAULT_IMPORT_LIM
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument("--limit")
-        parser.add_argument("--fast")
+        parser.add_argument("--limit", type=str)
+        parser.add_argument("--fast", default=False, type=bool)
+        parser.add_argument("--perform_update", default=False, type=bool)
 
     def handle(self, **options):
         after = None
         before = None
         if Activity.objects.count() > 0:
             after = localtime(Activity.objects.first().start)
-            # after = datetime.datetime.now() - datetime.timedelta(weeks=5)
+            # after = "2020-01-01"
+            # after = datetime.datetime.now() - datetime.timedelta(weeks=10)
         else:
             before = datetime.datetime.now()
 
         limit = int(options["limit"]) if options["limit"] else settings.DEFAULT_IMPORT_LIMIT
-        fast = False
-        print(f"Importing activities -- after: {after}, before: {before}, limit: {limit}, fast: {fast}")
-        import_activities(after=after, before=before, limit=limit, fast=fast)
+        fast = options["fast"]
+        perform_update = bool(options["perform_update"])
+
+        print(f"Importing activities -- after: {after}, before: {before}, limit: {limit}, fast: {fast}, perform_update: {perform_update}")
+        import_activities(after=after, before=before, limit=limit, fast=fast, perform_update=perform_update)

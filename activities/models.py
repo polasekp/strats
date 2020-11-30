@@ -40,7 +40,17 @@ class Activity(SmartModel):
         ("WORKOUT", "Workout", 12),
         ("OTHER", "Other", 13),
         ("VIRTUAL_RIDE", "Virtual Ride", 14),
+        ("VIRTUAL_RUN", "Virtual Run", 15),
     )
+
+    TYPE_EMOJI = {
+        TYPE.RUN: "🏃",
+        TYPE.RIDE: "🚴",
+        TYPE.XC_SKI: "❄",
+    }
+
+    TYPES_RUN = [TYPE.RUN, TYPE.VIRTUAL_RUN]
+    TYPES_RIDE = [TYPE.RIDE, TYPE.VIRTUAL_RIDE]
 
     name = models.CharField(verbose_name="name", max_length=255, null=False, blank=False)
     description = models.TextField(blank=True)
@@ -64,6 +74,14 @@ class Activity(SmartModel):
     average_cadence = models.DecimalField(
         verbose_name="average cadence", decimal_places=1, max_digits=5, null=True, blank=True
     )
+    average_power = models.IntegerField(verbose_name="average power", null=True, blank=True)
+    max_power = models.IntegerField(verbose_name="max power", null=True, blank=True)
+    weighted_average_power = models.IntegerField(verbose_name="weighted average power", null=True, blank=True)
+    # True if the watts are from a power meter, false if estimated
+    has_power_meter = models.BooleanField(verbose_name="has power meter", default=False)
+    kcal = models.IntegerField(verbose_name="kCal", null=True, blank=True)
+    suffer_score = models.IntegerField(verbose_name="suffer score", null=True, blank=True)
+
     start = models.DateTimeField(verbose_name="start", null=False, blank=False)
     start_lat = models.DecimalField(
         verbose_name="start latitude", decimal_places=6, max_digits=8, null=True, blank=True
@@ -77,6 +95,7 @@ class Activity(SmartModel):
     elapsed_time = models.DurationField(verbose_name="elapsed time", null=False, blank=False)
     elevation_gain = models.PositiveIntegerField(verbose_name="elevation gain", null=True, blank=True)
     type = models.PositiveSmallIntegerField(verbose_name="type", choices=TYPE.choices, null=False, blank=False)
+    type_strava = models.CharField(verbose_name="type Strava", max_length=100, blank=True)
     gear = models.ManyToManyField("Gear", verbose_name="gear", related_name="activities", blank=True)
     kudos_count = models.PositiveIntegerField(verbose_name="kudos count", null=True, blank=True)
     photo_count = models.PositiveIntegerField(verbose_name="photo count", null=True, blank=True)
@@ -88,6 +107,8 @@ class Activity(SmartModel):
     commute = models.BooleanField(verbose_name="is commute", default=False)
     manual = models.BooleanField(verbose_name="is manual", default=False)
     has_heartrate = models.BooleanField(verbose_name="has heartrate", default=False)
+    private = models.BooleanField(verbose_name="private", default=False)
+    # may be removed?
     visibility = models.CharField(verbose_name="visibility", max_length=100, blank=True)
     # Strava does not enable to get related athletes, just the count. Therefore athletes has to be connected
     # manually with activity and the count of connected athletes and athlete count may differ
@@ -100,7 +121,7 @@ class Activity(SmartModel):
 
     def __repr__(self):
         if self.id:
-            return f"<{self.start_date_formatted}: {str.upper(self.TYPE.get_label(self.type))} -- {self.name_short} -- {self.tags_formatted}>"
+            return f"<<({self.start_date_formatted}) {str.upper(self.TYPE.get_label(self.type))} -- {self.name_short} -- {self.tags_formatted}({self.pk} - {self.strava_id})>>"
         else:
             return super().__repr__()
 
@@ -197,6 +218,12 @@ class Activity(SmartModel):
         strava_activity = STRAVA_HELPER.client.get_activity(self.strava_id)
         create_or_update_activity_from_strava(strava_activity)
         self.refresh_from_db()
+
+    def add_libka(self):
+        self.gear.add(Gear.objects.get(name="libka"))
+
+    def download_gpx_strava(self):
+        STRAVA_HELPER.download_gpx(self.strava_id)
 
     def download_garmin_fit(self):
         garmin_id = self.garmin_id

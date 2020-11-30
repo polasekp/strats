@@ -40,7 +40,15 @@ shell:
 
 
 import_activities:
-	@$(PYTHON) $(MANAGE_PY) import_activities --limit=$(limit) --fast=$(fast)
+	@$(PYTHON) $(MANAGE_PY) import_activities --limit=$(limit) --fast=$(fast) --perform_update=$(perform_update)
+
+
+stats:
+	@$(PYTHON) $(MANAGE_PY) stats
+
+
+make_la_libka:
+	@$(PYTHON) $(MANAGE_PY) make_la_libka
 
 
 recreatevenv:
