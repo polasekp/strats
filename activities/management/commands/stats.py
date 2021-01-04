@@ -71,7 +71,7 @@ class Command(BaseCommand):
         self.stats_from_date(self.today.replace(month=1, day=1), name, activity_types)
 
     def season_stats(self):
-        season_start_date = self.today.replace(month=10, day=1)
+        season_start_date = self.today.replace(year=self.today.year-1, month=10, day=1)
         season_start_date_formatted = season_start_date.strftime("%Y-%m-%d")
         name = f"SKIING SEASON (from {season_start_date_formatted})"
         activity_types = [Activity.TYPE.XC_SKI]
