@@ -26,6 +26,7 @@ STRAVA_ACTIVITY_TYPE_TO_ACTIVITY_TYPE = {
     "Canoeing": Activity.TYPE.CANOEING,
     "RockClimbing": Activity.TYPE.CLIMBING,
     "IceSkate": Activity.TYPE.ICE_SKATE,
+    "BackcountrySki": Activity.TYPE.BACKCOUNTRY_SKI,
 }
 
 

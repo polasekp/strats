@@ -41,6 +41,7 @@ class Activity(SmartModel):
         ("OTHER", "Other", 13),
         ("VIRTUAL_RIDE", "Virtual Ride", 14),
         ("VIRTUAL_RUN", "Virtual Run", 15),
+        ("BACKCOUNTRY_SKI", "Backcountry Ski", 16),
     )
 
     TYPE_EMOJI = {
