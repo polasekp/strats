@@ -27,6 +27,10 @@ class Command(BaseCommand):
         time_sum = queryset.aggregate(Sum("moving_time"))["moving_time__sum"]
         return round(time_sum.total_seconds() / 3600, 1) if time_sum else 0
 
+    def get_queryset_elevation_sum(self, queryset):
+        elevation_sum = queryset.aggregate(Sum("elevation_gain"))["elevation_gain__sum"]
+        return round(elevation_sum / 1000, 1) if elevation_sum else 0
+
     # def get_formatted_line_for_queryset(self, queryset):
     #     km_sum = self.get_queryset_km_sum(queryset)
     #     white_space = " " * (8 - len(str(km_sum)))
@@ -42,12 +46,13 @@ class Command(BaseCommand):
 
         print(stats_name)
         rows = []
-        headers = ["km", "hours"]
+        headers = ["km", "hours", "elevation [km]"]
         for activity_type in activity_types:
             activities_filtered = activities.filter(type=activity_type)
             km = self.get_queryset_km_sum(activities_filtered)
             hours = self.get_queryset_hours_sum(activities_filtered)
-            rows.append([Activity.TYPE_EMOJI.get(activity_type), km, hours])
+            elevation = self.get_queryset_elevation_sum(activities_filtered)
+            rows.append([Activity.TYPE_EMOJI.get(activity_type), km, hours, elevation])
 
             if activity_type == Activity.TYPE.XC_SKI:
                 classic = activities_filtered.filter(tags__name="classic")
@@ -55,19 +60,32 @@ class Command(BaseCommand):
                 rows.append(["⛸", self.get_queryset_km_sum(skate), self.get_queryset_hours_sum(skate)])
                 rows.append(["🎿", self.get_queryset_km_sum(classic), self.get_queryset_hours_sum(classic)])
 
-        rows.append(["SUM", self.get_queryset_km_sum(activities), self.get_queryset_hours_sum(activities)])
+        rows.append([
+            "SUM",
+            self.get_queryset_km_sum(activities),
+            self.get_queryset_hours_sum(activities),
+            self.get_queryset_elevation_sum(activities),
+        ])
         print(tabulate(rows, headers=headers, tablefmt="grid", numalign="right", floatfmt=".1f"))
         print()
         print()
 
     def week_stats(self):
         name = "LAST WEEK"
-        activity_types = [Activity.TYPE.RIDE, Activity.TYPE.RUN, Activity.TYPE.XC_SKI]
+        activity_types = [
+            Activity.TYPE.RIDE,
+            Activity.TYPE.RUN,
+            # Activity.TYPE.XC_SKI,
+        ]
         self.stats_from_date(self.today - timedelta(days=self.today.weekday()), name, activity_types)
 
     def year_stats(self):
         name = "LAST YEAR"
-        activity_types = [Activity.TYPE.RIDE, Activity.TYPE.RUN, Activity.TYPE.XC_SKI]
+        activity_types = [
+            Activity.TYPE.RIDE,
+            Activity.TYPE.RUN,
+            # Activity.TYPE.XC_SKI,
+        ]
         self.stats_from_date(self.today.replace(month=1, day=1), name, activity_types)
 
     def season_stats(self):
@@ -80,4 +98,4 @@ class Command(BaseCommand):
     def handle(self, **options):
         self.week_stats()
         self.year_stats()
-        self.season_stats()
+        # self.season_stats()

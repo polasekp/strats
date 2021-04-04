@@ -69,7 +69,7 @@ class Activity(SmartModel):
     average_heartrate = models.DecimalField(
         verbose_name="average heartrate", decimal_places=1, max_digits=7, null=True, blank=True
     )
-    max_heartrate = models.PositiveIntegerField(verbose_name="elevation gain", null=True, blank=True)
+    max_heartrate = models.PositiveIntegerField(verbose_name="max heartrate", null=True, blank=True)
     calories = models.PositiveIntegerField(verbose_name="calories", null=True, blank=True)
     average_temp = models.IntegerField(verbose_name="average temp", null=True, blank=True)
     average_cadence = models.DecimalField(
