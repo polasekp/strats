@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+	<script src="https://api.mapy.cz/loader.js"></script>
+	<script>Loader.load()</script>
+</head>
+
+<body>
+	<div id="m" style="height:800px"></div>
+	<script type="text/javascript">
+
+        var points = {{ points|safe }};
+        var links = {{ links|safe }};
+
+        var m = new SMap(JAK.gel("m"), SMap.Coords.fromWGS84(14.41790, 50.12655), 8);
+        m.addDefaultLayer(SMap.DEF_BASE).enable();
+        m.addDefaultControls();
+
+        var layer = new SMap.Layer.Marker();
+        m.addLayer(layer);
+        layer.enable();
+
+        for (var i = 0; i < points.length; i++) {
+            var point = points[i]
+            var link = links[i]
+            var center = SMap.Coords.fromWGS84(point[0], point[1]);
+
+            var options = {
+            title: link
+            };
+
+
+            var marker = new SMap.Marker(center, point, options);
+            var card = new SMap.Card();
+            card.getBody().innerHTML = link;
+            marker.decorate(SMap.Marker.Feature.Card, card);
+            layer.addMarker(marker);
+        }
+
+	</script>
+
+</body>
+</html>

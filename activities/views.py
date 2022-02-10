@@ -80,3 +80,23 @@ class ActivitiesView(TemplateView):
         # remaining_phases = last_day - today
 
         return context
+
+
+class ZaznamView(TemplateView):
+    template_name = "zaznam.html"
+
+    # queryset = Activity.objects.filter(type__in=[Activity.TYPE.BACKCOUNTRY_SKI])
+    queryset = Activity.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["points"] = []
+        context["links"] = []
+
+        for e, activity in enumerate(self.queryset):
+            try:
+                context["points"].append([float(activity.start_lon), float(activity.start_lat)])
+                context["links"].append(f"{activity.strava_id} {activity.name} <a href={activity.strava_link}>strava link</a>")
+            except Exception:
+                continue
+        return context
