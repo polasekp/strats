@@ -43,6 +43,17 @@ TAG_NAMES = ["skate", "classic"]
 TAG_NAME_TO_TAG = {}
 
 
+skate_tag = Tag.objects.get(name="skate")
+classic_tag = Tag.objects.get(name="classic")
+# tag activity name means how the tag is indicated in activity description / name
+TAG_ACTIVITY_NAME_TO_TAG = {
+    "skate": skate_tag,
+    "ft": skate_tag,
+    "classic": classic_tag,
+    "cl": classic_tag,
+}
+
+
 def create_tags_if_needed():
     for tag_name in TAG_NAMES:
         tag = get_object_or_none(Tag, name=tag_name)
@@ -53,11 +64,11 @@ def create_tags_if_needed():
 
 def add_tag_to_activity_if_needed(activity):
     # teh input activity is the instance of Activity model
-    for tag_name, tag in TAG_NAME_TO_TAG.items():
-        if (activity.name + activity.description).find(f"#{tag_name}") != -1:
+    for tag_name, tag in TAG_ACTIVITY_NAME_TO_TAG.items():
+        if (activity.name + activity.description).lower().find(f"#{tag_name}") != -1:
             activity.tags.add(tag)
 
-    if date(2019, 12, 7) <= activity.start.date() <= date(2019, 12, 15):
+    if date(2022, 12, 11) <= activity.start.date() <= date(2022, 12, 15):
         activity.tags.add(Tag.objects.get(name="MFF_misecky"))
 
 

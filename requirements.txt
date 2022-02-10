@@ -1,6 +1,6 @@
 Django==3.1.1
 django-extensions==2.2.5
-stravalib==0.10.2
+stravalib==0.10.4
 ipython==7.10.1
 garminconnect==0.1.9
 django-chamber==0.5.23
