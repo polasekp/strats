@@ -40,25 +40,38 @@ class Command(BaseCommand):
     #
     #     return f"  {km_sum} km {white_space} |    {time_hours} h"
 
-    def stats_from_date(self, start_date, stats_name, activity_types):
+    def get_stats_row_values_for_queryset(self, queryset, activity_type) -> list:
+        km = self.get_queryset_km_sum(queryset)
+        hours = self.get_queryset_hours_sum(queryset)
+        elevation = self.get_queryset_elevation_sum(queryset)
+        return [Activity.TYPE_EMOJI.get(activity_type), km, hours, elevation]
+
+    def stats_from_date(self, start_date, stats_name, activity_types, sum_only_selected=False):
         activities = Activity.objects.filter(start__gte=start_date)
-        activities = activities.filter(type__in=activity_types)
+        if sum_only_selected:
+            activities = activities.filter(type__in=activity_types)
 
         print(stats_name)
         rows = []
         headers = ["km", "hours", "elevation [km]"]
+
         for activity_type in activity_types:
             activities_filtered = activities.filter(type=activity_type)
-            km = self.get_queryset_km_sum(activities_filtered)
-            hours = self.get_queryset_hours_sum(activities_filtered)
-            elevation = self.get_queryset_elevation_sum(activities_filtered)
-            rows.append([Activity.TYPE_EMOJI.get(activity_type), km, hours, elevation])
+            rows.append(self.get_stats_row_values_for_queryset(activities_filtered, activity_type))
 
             if activity_type == Activity.TYPE.XC_SKI:
                 classic = activities_filtered.filter(tags__name="classic")
                 skate = activities_filtered.filter(tags__name="skate")
                 rows.append(["⛸", self.get_queryset_km_sum(skate), self.get_queryset_hours_sum(skate)])
                 rows.append(["🎿", self.get_queryset_km_sum(classic), self.get_queryset_hours_sum(classic)])
+
+
+        if Activity.TYPE.RIDE in activity_types:
+            activities_filtered = activities.filter(type__in=[Activity.TYPE.RIDE, Activity.TYPE.VIRTUAL_RIDE])
+            km = self.get_queryset_km_sum(activities_filtered)
+            hours = self.get_queryset_hours_sum(activities_filtered)
+            elevation = self.get_queryset_elevation_sum(activities_filtered)
+            rows.append(["bike sum", km, hours, elevation])
 
         rows.append([
             "SUM",
@@ -73,15 +86,16 @@ class Command(BaseCommand):
     def week_stats(self):
         name = "LAST WEEK"
         activity_types = [
+            Activity.TYPE.VIRTUAL_RIDE,
             Activity.TYPE.RIDE,
             Activity.TYPE.RUN,
-            # Activity.TYPE.XC_SKI,
         ]
         self.stats_from_date(self.today - timedelta(days=self.today.weekday()), name, activity_types)
 
     def year_stats(self):
         name = "LAST YEAR"
         activity_types = [
+            Activity.TYPE.VIRTUAL_RIDE,
             Activity.TYPE.RIDE,
             Activity.TYPE.RUN,
             # Activity.TYPE.XC_SKI,
@@ -90,10 +104,11 @@ class Command(BaseCommand):
 
     def season_stats(self):
         season_start_date = self.today.replace(year=self.today.year-1, month=10, day=1)
+        # season_start_date = self.today.replace(month=1, day=1)
         season_start_date_formatted = season_start_date.strftime("%Y-%m-%d")
         name = f"SKIING SEASON (from {season_start_date_formatted})"
         activity_types = [Activity.TYPE.XC_SKI]
-        self.stats_from_date(season_start_date, name, activity_types)
+        self.stats_from_date(season_start_date, name, activity_types, True)
 
     def handle(self, **options):
         self.week_stats()

@@ -47,6 +47,7 @@ class Activity(SmartModel):
     TYPE_EMOJI = {
         TYPE.RUN: "🏃",
         TYPE.RIDE: "🚴",
+        TYPE.VIRTUAL_RIDE: "rouvy",
         TYPE.XC_SKI: "❄",
     }
 
@@ -102,6 +103,7 @@ class Activity(SmartModel):
     photo_count = models.PositiveIntegerField(verbose_name="photo count", null=True, blank=True)
     achievement_count = models.PositiveIntegerField(verbose_name="achievement count", null=True, blank=True)
     comment_count = models.PositiveIntegerField(verbose_name="comment count", null=True, blank=True)
+    punctures_count = models.PositiveSmallIntegerField(verbose_name="punctures count", null=True, blank=True, default=0)
     pr_count = models.PositiveIntegerField(verbose_name="pr count", null=True, blank=True)
     race = models.BooleanField(verbose_name="is race", default=False)
     flagged = models.BooleanField(verbose_name="flagged", default=False)

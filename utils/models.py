@@ -54,6 +54,19 @@ TAG_ACTIVITY_NAME_TO_TAG = {
 }
 
 
+def count_activity_punctures_from_description(description: str) -> int:
+    desc_words = description.lower().split(" ")
+    puncture = [word for word in desc_words if word.find("#puncture") != -1]
+    if not puncture:
+        return 0
+    puncture = puncture[0]
+    puncture_list = puncture.split("_")
+    try:
+        return int(puncture_list[1])
+    except IndexError:
+        return 1
+
+
 def create_tags_if_needed():
     for tag_name in TAG_NAMES:
         tag = get_object_or_none(Tag, name=tag_name)
@@ -62,8 +75,7 @@ def create_tags_if_needed():
         TAG_NAME_TO_TAG[tag_name] = tag
 
 
-def add_tag_to_activity_if_needed(activity):
-    # teh input activity is the instance of Activity model
+def add_tag_to_activity_if_needed(activity: Activity):
     for tag_name, tag in TAG_ACTIVITY_NAME_TO_TAG.items():
         if (activity.name + activity.description).lower().find(f"#{tag_name}") != -1:
             activity.tags.add(tag)
@@ -106,7 +118,7 @@ def get_activity_num_field(activity, field, strats_json):
 
 def create_or_update_activity_from_strava(activity):
     # first check description if there are is json with corrected data
-    description = activity.description if activity.description else ""
+    description = activity.description or ""
     strats_json = None
     if description:
         strats_json = get_json_from_activity_description(description)
@@ -116,7 +128,7 @@ def create_or_update_activity_from_strava(activity):
             strava_id=activity.id,
             defaults={
                 "name": activity.name,
-                "description": activity.description if activity.description else "",
+                "description": description,
                 "athlete_id": activity.athlete.id,
                 "external_id": activity.external_id,
                 "distance": round(Decimal(activity.distance._num), 2),
@@ -138,6 +150,7 @@ def create_or_update_activity_from_strava(activity):
                 "photo_count": activity.total_photo_count,
                 "achievement_count": activity.achievement_count,
                 "comment_count": activity.comment_count,
+                "punctures_count": count_activity_punctures_from_description(description),
                 "commute": activity.commute,
                 "athlete_count": activity.athlete_count,
                 "start_lat": round(Decimal(activity.start_latlng.lat), 6) if activity.start_latlng else None,

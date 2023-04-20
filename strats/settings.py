@@ -118,7 +118,7 @@ SHELL_PLUS_POST_IMPORTS = [("activities.models", "*")]
 IPYTHON_ARGUMENTS = ["--ext", "autoreload", "-c", "%autoreload 2", "-i"]
 
 # limit used when importing activities
-DEFAULT_IMPORT_LIMIT = 50
+DEFAULT_IMPORT_LIMIT = 500
 
 GARMIN_DOWNLOAD_DIR_NAME = "downloads_garmin"
 GARMIN_DOWNLOAD_DIR = os.path.join(BASE_DIR, GARMIN_DOWNLOAD_DIR_NAME)

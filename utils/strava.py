@@ -72,7 +72,7 @@ class StravaHelper:
             self._refresh_client()
         return self._client
 
-    def get_activity(self, activity_id: int, include_all_efforts=False):
+    def get_activity(self, activity_id: int, include_all_efforts=True):
         return self.client.get_activity(activity_id, include_all_efforts)
 
     def get_activities(self, before, after, limit):
