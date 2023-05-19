@@ -1,11 +1,14 @@
 import logging
 import math
 import time
+from datetime import datetime
 
 from chamber.models import SmartModel
 from chamber.utils.datastructures import ChoicesNumEnum
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Sum, QuerySet
 
 logger = logging.getLogger(__name__)
 
@@ -282,15 +285,53 @@ class Gear(SmartModel):
 
 class Accessory(SmartModel):
 
+    TYPE = ChoicesNumEnum(
+        ("CHAIN", "chain", 1),
+        ("TYRE", "tyre", 2),
+        ("TUBE", "tube", 3),
+        ("OTHER", "other", 4),
+    )
+
     name = models.CharField(verbose_name="name", max_length=50, null=False, blank=False)
-    activities = models.ManyToManyField("Activity", verbose_name="activities", blank=True, related_name="accessories")
+    description = models.TextField(verbose_name="description", null=True, blank=True)
+    registered_at = models.DateTimeField(verbose_name="registered at", null=False, blank=False, default=datetime.now)
+    deregistered_at = models.DateTimeField(verbose_name="deregistered at", null=True, blank=True)
     gear = models.ForeignKey(
         "Gear", verbose_name="gear", null=False, blank=False, on_delete=models.CASCADE, related_name="accessories"
     )
     is_active = models.BooleanField(verbose_name="is active", default=True)
+    type = models.PositiveSmallIntegerField(verbose_name="type", choices=TYPE.choices, null=False, blank=False)
+
+    def associate_activities(self) -> None:
+        """Associate all activities with this accessory."""
+        self.activities.add(*Activity.objects.filter(
+            gear=self.gear,
+            start__gte=self.registered_at,
+            start__lte=self.deregistered_at if self.deregistered_at else datetime.now()
+        ))
+
+    @property
+    def activities(self) -> QuerySet:
+        """Return activities associated with this accessory."""
+        return Activity.objects.filter(
+            gear=self.gear,
+            start__gte=self.registered_at,
+            start__lte=self.deregistered_at if self.deregistered_at else datetime.now()
+        )
+
+    @property
+    def distance_km(self) -> int:
+        """Return total distance in km."""
+        distance_m = self.activities.aggregate(Sum("distance"))["distance__sum"] or 0
+        return round(distance_m / 1000)
 
     def __str__(self):
         return f"{self.name} ({self.gear})"
+
+    def _post_save(self, changed, changed_fields, *args, **kwargs):
+        if self.is_active and self.gear.accessories.filter(is_active=True, type=self.type).exclude(id=self.id).exists():
+            raise ValidationError(f"Active accessory of type {self.type} already exists for {self.gear}")
+        
 
     class Meta:
         ordering = ("-created_at",)

@@ -7,11 +7,12 @@ from django.utils.timezone import localtime
 from activities.models import Activity, Tag
 from utils.models import (
     create_or_update_activity_from_strava,
-    create_and_add_gear_to_activity_if_needed,
+    get_gear_by_strava_activity,
     add_tag_to_activity_if_needed,
     create_tags_if_needed,
 )
 
+from stravalib.model import Activity as StravaActivity
 STRAVA_HELPER = settings.STRAVA_HELPER
 
 
@@ -56,25 +57,26 @@ def refresh_mff_activities():
 def import_activities(before=None, after=None, limit=settings.DEFAULT_IMPORT_LIMIT, fast=True, perform_update=False):
     create_tags_if_needed()
     activities_count = 0
-    new_gear_count = 0
+
     activities = STRAVA_HELPER.get_activities(after=after, before=before, limit=limit)
-    for e, activity in enumerate(activities, start=1):
-        if Activity.objects.filter(strava_id=activity.id).exists() and not perform_update:
+    for e, strava_activity in enumerate(activities, start=1):
+        if Activity.objects.filter(strava_id=strava_activity.id).exists() and not perform_update:
             continue
         else:
-            print(f"Creating or updating activity ID {activity.id}  ({e}/{limit})")
+            print(f"Creating or updating activity ID {strava_activity.id}  ({e}/{limit})")
         # If not fast, lets get detailed information
         if not fast:
-            activity = STRAVA_HELPER.get_activity(activity.id)
-        created_activity = create_or_update_activity_from_strava(activity)
+            strava_activity = STRAVA_HELPER.get_activity(strava_activity.id)
+        created_activity = create_or_update_activity_from_strava(strava_activity)
         print(created_activity)
         activities_count += 1
-        if create_and_add_gear_to_activity_if_needed(activity, STRAVA_HELPER.client):
-            new_gear_count += 1
+
+        gear = get_gear_by_strava_activity(strava_activity, STRAVA_HELPER.client)
+        if gear:
+            created_activity.gear.add(gear)
         add_tag_to_activity_if_needed(created_activity)
 
     print(f"Successfully imported {activities_count} activities.")
-    print(f"Created {new_gear_count} new gear.")
 
 
 class Command(BaseCommand):

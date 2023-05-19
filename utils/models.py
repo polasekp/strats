@@ -1,10 +1,11 @@
 import json
-from datetime import date
 from decimal import Decimal
+from typing import Optional
 
 from chamber.shortcuts import get_object_or_none
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
+from stravalib.model import Activity as StravaActivity
 
 from activities.models import Activity, Gear, Tag
 
@@ -80,23 +81,19 @@ def add_tag_to_activity_if_needed(activity: Activity):
         if (activity.name + activity.description).lower().find(f"#{tag_name}") != -1:
             activity.tags.add(tag)
 
-    if date(2022, 12, 11) <= activity.start.date() <= date(2022, 12, 15):
-        activity.tags.add(Tag.objects.get(name="MFF_misecky"))
 
+def get_gear_by_strava_activity(strava_activity: StravaActivity, strava_client) -> Optional[Gear]:
+    strava_gear_id = strava_activity.gear_id
+    if not strava_gear_id:
+        return None
 
-def create_and_add_gear_to_activity_if_needed(activity, strava_client):
-    if activity.gear_id:
-        gear_created = False
-        gear = get_object_or_none(Gear, strava_id=activity.gear_id)
-        if not gear:
-            strava_gear = strava_client.get_gear(activity.gear_id)
-            gear = Gear.objects.create(
-                strava_id=strava_gear.id, name=strava_gear.name, type=STRAVA_ACTIVITY_TYPE_TO_GEAR_TYPE[activity.type]
-            )
-            gear_created = True
-        Activity.objects.get(strava_id=activity.id).gear.add(gear)
-        return gear_created
-    return False
+    gear = get_object_or_none(Gear, strava_id=strava_gear_id)
+    if not gear:
+        strava_gear = strava_client.get_gear(strava_gear_id)
+        gear = Gear.objects.create(
+            strava_id=strava_gear.id, name=strava_gear.name, type=STRAVA_ACTIVITY_TYPE_TO_GEAR_TYPE[strava_activity.type]
+        )
+    return gear
 
 
 def get_json_from_activity_description(description):
