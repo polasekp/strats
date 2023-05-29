@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
-
+from django.db.models import Sum, F
+from django.db.models.functions import Round
 from .models import Accessory, Activity, Athlete, Gear, Tag
 
 
@@ -40,6 +41,27 @@ class AccessoryAdmin(admin.ModelAdmin):
     list_display = ('registered_at_formatted', 'type', 'name', 'distance_km', "is_active")
 
 
+class GearAdmin(admin.ModelAdmin):
+    list_filter = ("type", "active",)
+    list_display = ('name', 'type', 'calculated_distance_km', 'active', 'retired_at')
+
+    def calculated_distance_km(self, obj):
+        return obj._distance_km
+
+    calculated_distance_km.admin_order_field = '-_distance_km'
+    calculated_distance_km.short_description = 'distance km'
+
+    def get_queryset(self, request):
+        return (
+            super().get_queryset(request)
+            .annotate(
+                _distance=Sum('activities__distance')
+            ).annotate(
+                _distance_km=Round(F('_distance') / 1000)
+            )
+        )
+
 admin.site.register(Activity, ActivityAdmin)
 admin.site.register(Accessory, AccessoryAdmin)
-admin.site.register([Athlete, Gear, Tag])
+admin.site.register(Gear, GearAdmin)
+admin.site.register([Athlete, Tag])

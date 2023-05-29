@@ -273,9 +273,15 @@ class Gear(SmartModel):
     name = models.CharField(verbose_name="name", max_length=50, null=False, blank=False)
     type = models.PositiveSmallIntegerField(verbose_name="gear type", choices=TYPE.choices, null=False, blank=False)
     strava_id = models.CharField(verbose_name="strava ID", max_length=10, null=True, blank=True)
+    active = models.BooleanField(verbose_name="active", null=False, blank=True, default=True)
+    retired_at = models.DateTimeField(verbose_name="retired at", null=True, blank=True)
 
     def __str__(self):
         return self.name
+
+    @property
+    def distance_km(self) -> int:
+        return round((self.activities.aggregate(Sum("distance"))["distance__sum"]) / 1000)
 
     class Meta:
         ordering = ("-created_at",)
