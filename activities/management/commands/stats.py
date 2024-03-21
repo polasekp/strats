@@ -62,8 +62,8 @@ class Command(BaseCommand):
             if activity_type == Activity.TYPE.XC_SKI:
                 classic = activities_filtered.filter(tags__name="classic")
                 skate = activities_filtered.filter(tags__name="skate")
-                rows.append(["⛸", self.get_queryset_km_sum(skate), self.get_queryset_hours_sum(skate)])
-                rows.append(["🎿", self.get_queryset_km_sum(classic), self.get_queryset_hours_sum(classic)])
+                rows.append(["⛸", self.get_queryset_km_sum(skate), self.get_queryset_hours_sum(skate), self.get_queryset_elevation_sum(skate)])
+                rows.append(["🎿", self.get_queryset_km_sum(classic), self.get_queryset_hours_sum(classic), self.get_queryset_elevation_sum(classic)])
 
 
         if Activity.TYPE.RIDE in activity_types:
@@ -103,10 +103,10 @@ class Command(BaseCommand):
         self.stats_from_date(self.today.replace(month=1, day=1), name, activity_types)
 
     def season_stats(self):
-        season_start_date = self.today.replace(year=self.today.year-1, month=10, day=1)
+        season_start_date = self.today.replace(year=self.today.year, month=10, day=1)
         # season_start_date = self.today.replace(month=1, day=1)
         season_start_date_formatted = season_start_date.strftime("%Y-%m-%d")
-        name = f"SKIING SEASON (from {season_start_date_formatted})"
+        name = f"SKIING SEASON {season_start_date.year} (from {season_start_date_formatted})"
         activity_types = [Activity.TYPE.XC_SKI]
         self.stats_from_date(season_start_date, name, activity_types, True)
 

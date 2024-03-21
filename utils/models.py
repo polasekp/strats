@@ -46,12 +46,15 @@ TAG_NAME_TO_TAG = {}
 
 skate_tag = Tag.objects.get(name="skate")
 classic_tag = Tag.objects.get(name="classic")
+skin_ski_tag = Tag.objects.get(name="skin-ski")
 # tag activity name means how the tag is indicated in activity description / name
 TAG_ACTIVITY_NAME_TO_TAG = {
     "skate": skate_tag,
     "ft": skate_tag,
     "classic": classic_tag,
     "cl": classic_tag,
+    "chlup": skin_ski_tag,
+    "skin": skin_ski_tag,
 }
 
 
